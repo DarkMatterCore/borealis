@@ -34,41 +34,41 @@ void SwitchFontLoader::loadFonts()
     if (bfttfGetFontByType(&font, BfttfFontType_Standard))
         Application::loadFontFromMemory(FONT_REGULAR, font.address, font.size, false);
     else
-        Logger::error("switch: could not load Standard shared font: {:#x}", rc);
+        Logger::error("switch: could not load Standard shared font");
 
     // Korean
     if (bfttfGetFontByType(&font, BfttfFontType_Korean))
         Application::loadFontFromMemory(FONT_KOREAN_REGULAR, font.address, font.size, false);
     else
-        Logger::error("switch: could not load Korean shared font: {:#x}", rc);
+        Logger::error("switch: could not load Korean shared font");
 
     // Simplified Chinese
     if (bfttfGetFontByType(&font, BfttfFontType_ChineseSimplified))
         Application::loadFontFromMemory(FONT_CHINESE_SIMPLIFIED_REGULAR, font.address, font.size, false);
     else
-        Logger::error("switch: could not load Simplified Chinese shared font: {:#x}", rc);
+        Logger::error("switch: could not load Simplified Chinese shared font");
 
     // Extended Simplified Chinese
     if (bfttfGetFontByType(&font, BfttfFontType_ExtChineseSimplified))
         Application::loadFontFromMemory(FONT_CHINESE_SIMPLIFIED_EXTENDED, font.address, font.size, false);
     else
-        Logger::error("switch: could not load Extended Simplified Chinese shared font: {:#x}", rc);
+        Logger::error("switch: could not load Extended Simplified Chinese shared font");
 
     // Traditional Chinese
     if (bfttfGetFontByType(&font, BfttfFontType_ChineseTraditional))
         Application::loadFontFromMemory(FONT_CHINESE_TRADITIONAL_REGULAR, font.address, font.size, false);
     else
-        Logger::error("switch: could not load Traditional Chinese shared font: {:#x}", rc);
+        Logger::error("switch: could not load Traditional Chinese shared font");
 
     // Extented (symbols)
     if (bfttfGetFontByType(&font, BfttfFontType_NintendoExt))
         Application::loadFontFromMemory(FONT_SWITCH_ICONS, font.address, font.size, false);
     else
-        Logger::error("switch: could not load Extented shared font: {:#x}", rc);
+        Logger::error("switch: could not load Extented shared font");
 
     // Material icons
     if (!this->loadMaterialFromResources())
-        Logger::error("switch: could not load Material icons font from resources", rc);
+        Logger::error("switch: could not load Material icons font from resources");
 }
 
 } // namespace brls
