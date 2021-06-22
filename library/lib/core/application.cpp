@@ -121,21 +121,50 @@ void Application::createWindow(std::string windowTitle)
     int regular = Application::getFont(FONT_REGULAR);
     if (regular != FONT_INVALID)
     {
+        int fallback = FONT_INVALID;
         NVGcontext* vg = Application::getNVGContext();
 
-        // Switch icons
-        int switchIcons = Application::getFont(FONT_SWITCH_ICONS);
-        if (switchIcons != FONT_INVALID)
-            nvgAddFallbackFontId(vg, regular, switchIcons);
+        // Korean
+        fallback = Application::getFont(FONT_KOREAN_REGULAR);
+        if (fallback != FONT_INVALID)
+            nvgAddFallbackFontId(vg, regular, fallback);
         else
-            Logger::warning("Switch icons font was not loaded, icons will not be displayed");
+            Logger::warning("Korean font was not loaded");
+
+        // Simplified Chinese
+        fallback = Application::getFont(FONT_CHINESE_SIMPLIFIED_REGULAR);
+        if (fallback != FONT_INVALID)
+            nvgAddFallbackFontId(vg, regular, fallback);
+        else
+            Logger::warning("Simplified Chinese font was not loaded");
+
+        // Extended Simplified Chinese
+        fallback = Application::getFont(FONT_CHINESE_SIMPLIFIED_EXTENDED);
+        if (fallback != FONT_INVALID)
+            nvgAddFallbackFontId(vg, regular, fallback);
+        else
+            Logger::warning("Extended Simplified Chinese font was not loaded");
+
+        // Traditional Chinese
+        fallback = Application::getFont(FONT_CHINESE_TRADITIONAL_REGULAR);
+        if (fallback != FONT_INVALID)
+            nvgAddFallbackFontId(vg, regular, fallback);
+        else
+            Logger::warning("Traditional Chinese font was not loaded");
 
         // Material icons
-        int materialIcons = Application::getFont(FONT_MATERIAL_ICONS);
-        if (materialIcons != FONT_INVALID)
-            nvgAddFallbackFontId(vg, regular, materialIcons);
+        fallback = Application::getFont(FONT_MATERIAL_ICONS);
+        if (fallback != FONT_INVALID)
+            nvgAddFallbackFontId(vg, regular, fallback);
         else
             Logger::warning("Material icons font was not loaded, icons will not be displayed");
+
+        // Switch icons
+        fallback = Application::getFont(FONT_SWITCH_ICONS);
+        if (fallback != FONT_INVALID)
+            nvgAddFallbackFontId(vg, regular, fallback);
+        else
+            Logger::warning("Switch icons font was not loaded, icons will not be displayed");
     }
     else
     {

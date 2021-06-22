@@ -18,13 +18,10 @@
 #include <borealis/core/logger.hpp>
 #include <borealis/platforms/switch/switch_audio.hpp>
 
+#include <bfsar.h>
+
 namespace brls
 {
-
-#define QLAUNCH_PID 0x0100000000001000
-#define QLAUNCH_MOUNT_POINT "qlaunch"
-#define ROMFS_MOUNT_POINT "romfs"
-#define BFSAR_PATH "/sound/qlaunch.bfsar"
 
 const std::string SOUNDS_MAP[_SOUND_MAX] = {
     "", // SOUND_NONE
@@ -43,6 +40,14 @@ SwitchAudioPlayer::SwitchAudioPlayer()
     for (size_t sound = 0; sound < _SOUND_MAX; sound++)
         this->sounds[sound] = PLSR_PLAYER_INVALID_SOUND;
 
+    // Get BFSAR file path
+    const char *bfsarPath = bfsarGetFilePath();
+    if (!bfsarPath)
+    {
+        Logger::error("Failed to get BRSAR file path");
+        return;
+    }
+
     // Init pulsar player
     PLSR_RC rc = plsrPlayerInit();
     if (PLSR_RC_FAILED(rc))
@@ -51,33 +56,11 @@ SwitchAudioPlayer::SwitchAudioPlayer()
         return;
     }
 
-    // Check if the program running is qlaunch
-    char bfsarPath[29];
-    u64 programId = 0;
-    svcGetInfo(&programId, InfoType_ProgramId, CUR_PROCESS_HANDLE, 0);
-    if (programId != QLAUNCH_PID)
-    {
-        // Mount qlaunch ROMFS for the BFSAR
-        Result result = romfsMountDataStorageFromProgram(QLAUNCH_PID, QLAUNCH_MOUNT_POINT);
-        if (!R_SUCCEEDED(result))
-        {
-            Logger::error("Unable to mount qlaunch ROMFS: {:#x}", result);
-
-            plsrPlayerExit();
-            return;
-        }
-
-        sprintf(bfsarPath, "%s:%s", QLAUNCH_MOUNT_POINT, BFSAR_PATH);
-    }
-    else
-        sprintf(bfsarPath, "%s:%s", ROMFS_MOUNT_POINT, BFSAR_PATH);
-
     // Open qlaunch BFSAR
     rc = plsrBFSAROpen(bfsarPath, &this->qlaunchBfsar);
     if (PLSR_RC_FAILED(rc))
     {
         Logger::error("Unable to open qlaunch BFSAR: {:#x}", rc);
-
         plsrPlayerExit();
         return;
     }

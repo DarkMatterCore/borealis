@@ -21,31 +21,47 @@
 #include <borealis/core/logger.hpp>
 #include <borealis/platforms/switch/switch_font.hpp>
 
+#include <bfttf.h>
+
 namespace brls
 {
 
 void SwitchFontLoader::loadFonts()
 {
-    PlFontData font;
-    Result rc;
+    BfttfFontData font;
 
     // Standard
-    rc = plGetSharedFontByType(&font, PlSharedFontType_Standard);
-    if (R_SUCCEEDED(rc))
+    if (bfttfGetFontByType(&font, BfttfFontType_Standard))
         Application::loadFontFromMemory(FONT_REGULAR, font.address, font.size, false);
     else
         Logger::error("switch: could not load Standard shared font: {:#x}", rc);
 
     // Korean
-    rc = plGetSharedFontByType(&font, PlSharedFontType_KO);
-    if (R_SUCCEEDED(rc))
+    if (bfttfGetFontByType(&font, BfttfFontType_Korean))
         Application::loadFontFromMemory(FONT_KOREAN_REGULAR, font.address, font.size, false);
     else
         Logger::error("switch: could not load Korean shared font: {:#x}", rc);
 
+    // Simplified Chinese
+    if (bfttfGetFontByType(&font, BfttfFontType_ChineseSimplified))
+        Application::loadFontFromMemory(FONT_CHINESE_SIMPLIFIED_REGULAR, font.address, font.size, false);
+    else
+        Logger::error("switch: could not load Simplified Chinese shared font: {:#x}", rc);
+
+    // Extended Simplified Chinese
+    if (bfttfGetFontByType(&font, BfttfFontType_ExtChineseSimplified))
+        Application::loadFontFromMemory(FONT_CHINESE_SIMPLIFIED_EXTENDED, font.address, font.size, false);
+    else
+        Logger::error("switch: could not load Extended Simplified Chinese shared font: {:#x}", rc);
+
+    // Traditional Chinese
+    if (bfttfGetFontByType(&font, BfttfFontType_ChineseTraditional))
+        Application::loadFontFromMemory(FONT_CHINESE_TRADITIONAL_REGULAR, font.address, font.size, false);
+    else
+        Logger::error("switch: could not load Traditional Chinese shared font: {:#x}", rc);
+
     // Extented (symbols)
-    rc = plGetSharedFontByType(&font, PlSharedFontType_NintendoExt);
-    if (R_SUCCEEDED(rc))
+    if (bfttfGetFontByType(&font, BfttfFontType_NintendoExt))
         Application::loadFontFromMemory(FONT_SWITCH_ICONS, font.address, font.size, false);
     else
         Logger::error("switch: could not load Extented shared font: {:#x}", rc);
