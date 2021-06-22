@@ -18,7 +18,7 @@
 #include <borealis/core/logger.hpp>
 #include <borealis/platforms/switch/switch_audio.hpp>
 
-#include <bfsar.h>
+#include <nxdt_bfsar.h>
 
 namespace brls
 {
