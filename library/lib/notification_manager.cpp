@@ -132,7 +132,7 @@ void NotificationManager::layoutNotification(size_t index)
         0 // height is dynamic
     );
 
-    notification->invalidate(); // TODO: call layout directly to fix posting multiple notifications in one frame
+    notification->invalidate(true);
 }
 
 void NotificationManager::layout(NVGcontext* vg, Style* style, FontStash* stash)
