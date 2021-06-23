@@ -45,6 +45,7 @@
 
 #ifdef __SWITCH__
 #include <switch.h>
+#include <bfttf.h>
 #endif
 
 #include <chrono>
@@ -228,31 +229,52 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     // Load fonts
 #ifdef __SWITCH__
     {
-        PlFontData font;
+        BfttfFontData font;
 
         // Standard font
-        Result rc = plGetSharedFontByType(&font, PlSharedFontType_Standard);
-        if (R_SUCCEEDED(rc))
+        if (bfttfGetFontByType(&font, BfttfFontType_Standard))
         {
             Logger::info("Using Switch shared font");
             Application::fontStash.regular = Application::loadFontFromMemory("regular", font.address, font.size, false);
         }
 
         // Korean font
-        rc = plGetSharedFontByType(&font, PlSharedFontType_KO);
-        if (R_SUCCEEDED(rc))
+        if (bfttfGetFontByType(&font, BfttfFontType_Korean))
         {
             Logger::info("Adding Switch shared Korean font");
             Application::fontStash.korean = Application::loadFontFromMemory("korean", font.address, font.size, false);
             nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.korean);
         }
 
+        // Simplified Chinese font
+        if (bfttfGetFontByType(&font, BfttfFontType_ChineseSimplified))
+        {
+            Logger::info("Adding Switch shared Simplified Chinese font");
+            Application::fontStash.schinese = Application::loadFontFromMemory("schinese", font.address, font.size, false);
+            nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.schinese);
+        }
+
+        // Extended Simplified Chinese font
+        if (bfttfGetFontByType(&font, BfttfFontType_ExtChineseSimplified))
+        {
+            Logger::info("Adding Switch shared Extended Simplified Chinese font");
+            Application::fontStash.schineseext = Application::loadFontFromMemory("schineseext", font.address, font.size, false);
+            nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.schineseext);
+        }
+
+        // Traditional Chinese font
+        if (bfttfGetFontByType(&font, BfttfFontType_ChineseTraditional))
+        {
+            Logger::info("Adding Switch shared Traditional Chinese font");
+            Application::fontStash.tchinese = Application::loadFontFromMemory("tchinese", font.address, font.size, false);
+            nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.tchinese);
+        }
+
         // Extented font
-        rc = plGetSharedFontByType(&font, PlSharedFontType_NintendoExt);
-        if (R_SUCCEEDED(rc))
+        if (bfttfGetFontByType(&font, BfttfFontType_NintendoExt))
         {
             Logger::info("Using Switch shared symbols font");
-            Application::fontStash.sharedSymbols = Application::loadFontFromMemory("symbols", font.address, font.size, false);
+            Application::fontStash.sharedSymbols = Application::loadFontFromMemory("sharedSymbols", font.address, font.size, false);
         }
     }
 #else
@@ -273,17 +295,6 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     if (access(BOREALIS_ASSET("material/MaterialIcons-Regular.ttf"), F_OK) != -1)
         Application::fontStash.material = Application::loadFont("material", BOREALIS_ASSET("material/MaterialIcons-Regular.ttf"));
 
-    // Set symbols font as fallback
-    if (Application::fontStash.sharedSymbols)
-    {
-        Logger::info("Using shared symbols font");
-        nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.sharedSymbols);
-    }
-    else
-    {
-        Logger::warning("Shared symbols font not found");
-    }
-
     // Set Material as fallback
     if (Application::fontStash.material)
     {
@@ -293,6 +304,17 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     else
     {
         Logger::warning("Material font not found");
+    }
+
+    // Set symbols font as fallback
+    if (Application::fontStash.sharedSymbols)
+    {
+        Logger::info("Using shared symbols font");
+        nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.sharedSymbols);
+    }
+    else
+    {
+        Logger::warning("Shared symbols font not found");
     }
 
     // Load theme
