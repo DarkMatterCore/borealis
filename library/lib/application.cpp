@@ -467,6 +467,8 @@ bool Application::mainLoop()
         }
     }
 
+    Application::focusLocked = false;
+
     return true;
 }
 
@@ -477,6 +479,9 @@ void Application::quit()
 
 void Application::navigate(FocusDirection direction)
 {
+    if (Application::focusLocked)
+        return;
+
     View* currentFocus = Application::currentFocus;
 
     // Do nothing if there is no current focus or if it doesn't have a parent
@@ -504,6 +509,7 @@ void Application::navigate(FocusDirection direction)
     }
 
     // Otherwise give it focus
+    Application::focusLocked = true;
     Application::giveFocus(nextFocus);
 }
 
