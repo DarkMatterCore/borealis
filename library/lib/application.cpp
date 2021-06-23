@@ -61,6 +61,11 @@ constexpr uint32_t WINDOW_HEIGHT = 720;
 #define BUTTON_REPEAT_DELAY 15
 #define BUTTON_REPEAT_CADENCY 5
 
+#define AXIS_DEADZONE 0.4
+#define AXIS_IS_IN_DEADZONE(x) ((x) > -AXIS_DEADZONE && (x) < AXIS_DEADZONE)
+#define AXIS_TO_BUTTON(x, y) (((x) == GLFW_GAMEPAD_AXIS_LEFT_X || (x) == GLFW_GAMEPAD_AXIS_RIGHT_X) ? ((y) < 0.0f ? GLFW_GAMEPAD_BUTTON_DPAD_LEFT : GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) : \
+                             (((x) == GLFW_GAMEPAD_AXIS_LEFT_Y || (x) == GLFW_GAMEPAD_AXIS_RIGHT_Y) ? ((y) < 0.0f ? GLFW_GAMEPAD_BUTTON_DPAD_UP   : GLFW_GAMEPAD_BUTTON_DPAD_DOWN)  : 0))
+
 // glfw code from the glfw hybrid app by fincs
 // https://github.com/fincs/hybrid_app
 
@@ -400,7 +405,22 @@ bool Application::mainLoop()
     }
 
     // Trigger gamepad events
-    // TODO: Translate axis events to dpad events here
+
+    // Translate axis events to dpad events
+    for (int i = GLFW_GAMEPAD_AXIS_LEFT_X; i <= GLFW_GAMEPAD_AXIS_RIGHT_Y; i++)
+    {
+        float axis = Application::gamepad.axes[i];
+
+        // Do not proceed if there has been no movement along this axis
+        if (AXIS_IS_IN_DEADZONE(axis))
+            continue;
+
+        // Translate axis to button
+        int btn = AXIS_TO_BUTTON(i, axis);
+
+        // Update press status on this button
+        Application::gamepad.buttons[btn] = GLFW_PRESS;
+    }
 
     bool anyButtonPressed               = false;
     bool repeating                      = false;
