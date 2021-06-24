@@ -296,6 +296,17 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         Application::fontStash.sharedSymbols = Application::loadFont("sharedSymbols", BOREALIS_ASSET("Wingdings.ttf"));
 #endif
 
+    // Set symbols font as fallback
+    if (Application::fontStash.sharedSymbols)
+    {
+        Logger::info("Using shared symbols font");
+        nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.sharedSymbols);
+    }
+    else
+    {
+        Logger::warning("Shared symbols font not found");
+    }
+
     // Material font
     if (access(BOREALIS_ASSET("material/MaterialIcons-Regular.ttf"), F_OK) != -1)
         Application::fontStash.material = Application::loadFont("material", BOREALIS_ASSET("material/MaterialIcons-Regular.ttf"));
@@ -309,17 +320,6 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     else
     {
         Logger::warning("Material font not found");
-    }
-
-    // Set symbols font as fallback
-    if (Application::fontStash.sharedSymbols)
-    {
-        Logger::info("Using shared symbols font");
-        nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.sharedSymbols);
-    }
-    else
-    {
-        Logger::warning("Shared symbols font not found");
     }
 
     // Load theme
