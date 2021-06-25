@@ -574,6 +574,11 @@ View* Application::getCurrentFocus()
     return Application::currentFocus;
 }
 
+std::vector<View*>* Application::getFocusStack()
+{
+    return &(Application::focusStack);
+}
+
 bool Application::handleAction(char button)
 {
     if (Application::viewStack.empty())
