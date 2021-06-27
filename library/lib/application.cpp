@@ -543,6 +543,10 @@ void Application::onGamepadButtonPressed(char button, bool repeating)
 
     Application::repetitionOldFocus = Application::currentFocus;
 
+    // Play click animation
+    if (Application::currentFocus && button == GLFW_GAMEPAD_BUTTON_A)
+        Application::currentFocus->playClickAnimation();
+
     // Actions
     if (Application::handleAction(button))
         return;

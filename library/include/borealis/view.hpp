@@ -86,6 +86,7 @@ class View
     void drawHighlight(NVGcontext* vg, Theme* theme, float alpha, Style* style, bool background);
 
     float highlightAlpha = 0.0f;
+    float clickAnimationAlpha = 0.0f;
 
     bool dirty = true;
 
@@ -203,6 +204,8 @@ class View
     void registerAction(std::string hintText, Key key, ActionListener actionListener, bool hidden = false);
     void updateActionHint(Key key, std::string hintText);
     void setActionAvailable(Key key, bool available);
+
+    virtual void playClickAnimation();
 
     std::string describe() const { return typeid(*this).name(); }
 
