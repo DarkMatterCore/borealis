@@ -1012,7 +1012,7 @@ std::string* Application::getCommonFooter()
 }
 
 FramerateCounter::FramerateCounter()
-    : Label(LabelStyle::LIST_ITEM, "FPS: ---")
+    : Label(LabelStyle::FPS, "FPS: ---")
 {
     this->setColor(nvgRGB(255, 255, 255));
     this->setVerticalAlign(NVG_ALIGN_MIDDLE);

@@ -20,21 +20,25 @@
 #pragma once
 
 #include <borealis/view.hpp>
+#include <borealis/animations.hpp>
 
 namespace brls
 {
 
-enum class LabelStyle
+enum class LabelStyle : std::uint32_t
 {
     REGULAR = 0,
     MEDIUM,
     SMALL,
     DESCRIPTION,
+    FPS,
     CRASH,
     BUTTON_PRIMARY,
     BUTTON_PRIMARY_DISABLED,
     BUTTON_BORDERLESS,
     LIST_ITEM,
+    LIST_ITEM_VALUE,
+    LIST_ITEM_VALUE_FAINT,
     NOTIFICATION,
     DIALOG,
     BUTTON_DIALOG,
@@ -43,16 +47,24 @@ enum class LabelStyle
     BUTTON_REGULAR
 };
 
+enum class LabelAnimation
+{
+    EASE_IN,
+    EASE_OUT
+};
+
 // A Label, multiline or with a ticker
 class Label : public View
 {
   private:
-    std::string text;
+    std::string text = "";
+    std::string textTicker = "";
+    std::string textEllipsis = "";
 
     bool multiline;
     unsigned fontSize;
     float lineHeight;
-    LabelStyle labelStyle;
+    LabelStyle labelStyle, oldLabelStyle;
 
     NVGalign horizontalAlign = NVG_ALIGN_LEFT;
     NVGalign verticalAlign   = NVG_ALIGN_MIDDLE;
@@ -63,8 +75,31 @@ class Label : public View
     int customFont;
     bool useCustomFont = false;
 
+    unsigned textWidth = 0, textHeight = 0;
+    unsigned oldWidth = 0;
+
+    unsigned textTickerWidth = 0;
+    float tickerOffset = 0.0f;
+
+    bool tickerActive = false;
+    menu_timer_t tickerWaitTimer;
+    menu_timer_ctx_entry_t tickerWaitTimerCtx;
+
+    float textAnimation = 1.0f;
+
+    GenericEvent::Subscription parentFocusSubscription;
+
+    unsigned getFontSize(LabelStyle labelStyle);
+    float getLineHeight(LabelStyle labelStyle);
+
+    void onParentFocus();
+    void onParentUnfocus();
+
+    void updateTextDimensions();
+
   public:
     Label(LabelStyle labelStyle, std::string text, bool multiline = false);
+    ~Label();
 
     void draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx) override;
     void layout(NVGcontext* vg, Style* style, FontStash* stash) override;
@@ -74,6 +109,17 @@ class Label : public View
     void setText(std::string text);
     void setStyle(LabelStyle style);
     void setFontSize(unsigned size);
+
+    void startTickerAnimation();
+    void stopTickerAnimation();
+
+    const std::string& getText();
+
+    /**
+     * Only useful for single line labels.
+     */
+    unsigned getTextWidth();
+    unsigned getTextHeight();
 
     /**
      * Sets the label color
@@ -109,6 +155,13 @@ class Label : public View
      * = custom or the regular font
      */
     int getFont(FontStash* stash);
+
+    /**
+     * Sets the ticker state to active (scrolling) or inactive (ellipsis)
+     */
+    void setTickerState(bool active);
+
+    void animate(LabelAnimation animation);
 };
 
 } // namespace brls
