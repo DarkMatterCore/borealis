@@ -118,12 +118,6 @@ ListItem::ListItem(std::string label, std::string description, std::string subLa
     this->labelView = new Label(LabelStyle::LIST_ITEM, label, false);
     this->labelView->setParent(this);
 
-    this->valueView = new Label(LabelStyle::LIST_ITEM_VALUE, "", false);
-    this->valueView->setParent(this);
-
-    this->oldValueView = new Label(LabelStyle::LIST_ITEM_VALUE, "", false);
-    this->oldValueView->setParent(this);
-
     if (description != "")
     {
         this->descriptionView = new Label(LabelStyle::DESCRIPTION, description, true);
@@ -225,9 +219,9 @@ GenericEvent* ListItem::getClickEvent()
 void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
 {
     unsigned baseHeight = this->height;
-    bool hasSubLabel    = this->subLabelView;
+    bool hasSubLabel    = this->subLabelView && this->subLabelView->getText() != "";
     bool hasThumbnail   = this->thumbnailView;
-    bool hasValue       = this->valueView->getText() != "";
+    bool hasValue       = this->valueView && this->valueView->getText() != "";
 
     if (this->descriptionView)
         baseHeight -= this->descriptionView->getHeight() + style->List.Item.descriptionSpacing;
@@ -238,18 +232,21 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
     this->labelView->setBoundaries(x + leftPadding, y + (baseHeight / (hasSubLabel ? 3 : 2)), width - leftPadding - rightPadding, 0);
     this->labelView->invalidate();
 
-    unsigned valueX = x + width - style->List.Item.padding;
-    unsigned valueY = y + (hasSubLabel ? baseHeight - baseHeight / 3 : baseHeight / 2);
+    // Value
+    if (hasValue) {
+        unsigned valueX = x + width - style->List.Item.padding;
+        unsigned valueY = y + (hasSubLabel ? baseHeight - baseHeight / 3 : baseHeight / 2);
 
-    this->valueView->setBoundaries(valueX, valueY, 0, 0);
-    if (hasSubLabel) this->valueView->setVerticalAlign(NVG_ALIGN_TOP);
-    this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
-    this->valueView->invalidate();
+        this->valueView->setBoundaries(valueX, valueY, 0, 0);
+        if (hasSubLabel) this->valueView->setVerticalAlign(NVG_ALIGN_TOP);
+        this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
+        this->valueView->invalidate();
 
-    this->oldValueView->setBoundaries(valueX, valueY, 0, 0);
-    if (hasSubLabel) this->oldValueView->setVerticalAlign(NVG_ALIGN_TOP);
-    this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
-    this->oldValueView->invalidate();
+        this->oldValueView->setBoundaries(valueX, valueY, 0, 0);
+        if (hasSubLabel) this->oldValueView->setVerticalAlign(NVG_ALIGN_TOP);
+        this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
+        this->oldValueView->invalidate();
+    }
 
     // Sub Label
     if (hasSubLabel)
@@ -304,22 +301,36 @@ void ListItem::getHighlightInsets(unsigned* top, unsigned* right, unsigned* bott
 
 void ListItem::setValue(std::string value, bool faint, bool animate)
 {
-    this->oldValueView->setText(this->valueView->getText());
-    this->oldValueView->setStyle(this->valueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE);
+    this->oldValueFaint = this->valueFaint;
+    this->valueFaint    = faint;
 
-    this->valueView->setText(value);
-    this->valueView->setStyle(faint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE);
+    if (!this->valueView) {
+        this->valueView = new Label(LabelStyle::LIST_ITEM_VALUE, value, false);
+        this->valueView->setParent(this);
 
-    if (animate && this->oldValueView->getText() != "")
-    {
-        this->oldValueView->animate(LabelAnimation::EASE_OUT);
-        this->valueView->animate(LabelAnimation::EASE_IN);
+        this->oldValueView = new Label(LabelStyle::LIST_ITEM_VALUE, "", false);
+        this->oldValueView->setParent(this);
+    } else {
+        this->oldValueView->setText(this->valueView->getText());
+        this->oldValueView->setStyle(this->oldValueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE);
+
+        this->valueView->setText(value);
+        this->valueView->setStyle(this->valueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE);
+
+        if (animate && this->oldValueView->getText() != "")
+        {
+            this->oldValueView->animate(LabelAnimation::EASE_OUT);
+            this->valueView->animate(LabelAnimation::EASE_IN);
+        } else {
+            this->valueView->resetTextAnimation();
+            this->oldValueView->resetTextAnimation();
+        }
     }
 }
 
 std::string ListItem::getValue()
 {
-    return this->valueView->getText();
+    return this->valueView ? this->valueView->getText() : "";
 }
 
 void ListItem::setDrawTopSeparator(bool draw)
@@ -338,8 +349,9 @@ View* ListItem::getDefaultFocus()
 void ListItem::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx)
 {
     unsigned baseHeight = this->height;
-    bool hasSubLabel    = this->subLabelView;
+    bool hasSubLabel    = this->subLabelView && this->subLabelView->getText() != "";
     bool hasThumbnail   = this->thumbnailView;
+    bool hasValue       = this->valueView && this->valueView->getText() != "";
 
     if (this->indented)
     {
@@ -356,16 +368,14 @@ void ListItem::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned heigh
     }
 
     // Value
-    nvgTextAlign(vg, NVG_ALIGN_RIGHT | (hasSubLabel ? NVG_ALIGN_TOP : NVG_ALIGN_MIDDLE));
-    nvgFontFaceId(vg, ctx->fontStash->regular);
-    if (this->valueAnimation != 0.0f)
-    {
-        this->valueView->frame(ctx);
-        this->oldValueView->frame(ctx);
-    }
-    else
-    {
-        this->valueView->frame(ctx);
+    if (hasValue) {
+        if (this->valueView->getTextAnimation() != 0.0f)
+        {
+            this->valueView->frame(ctx);
+            this->oldValueView->frame(ctx);
+        } else {
+            this->valueView->frame(ctx);
+        }
     }
 
     // Checked marker
@@ -456,15 +466,15 @@ std::string ListItem::getLabel()
 
 void ListItem::setSubLabel(std::string subLabel)
 {
-    if (subLabel == "")
-        return;
-
     if (!this->subLabelView) {
         this->subLabelView = new Label(LabelStyle::DESCRIPTION, subLabel, false);
         this->subLabelView->setParent(this);
     } else {
         this->subLabelView->setText(subLabel);
     }
+
+    Style* style = Application::getStyle();
+    this->setHeight(subLabel != "" ? style->List.Item.heightWithSubLabel : style->List.Item.height);
 }
 
 std::string ListItem::getSubLabel()
@@ -475,8 +485,12 @@ std::string ListItem::getSubLabel()
 ListItem::~ListItem()
 {
     delete this->labelView;
-    delete this->valueView;
-    delete this->oldValueView;
+
+    if (this->valueView)
+        delete this->valueView;
+
+    if (this->oldValueView)
+        delete this->oldValueView;
 
     if (this->descriptionView)
         delete this->descriptionView;

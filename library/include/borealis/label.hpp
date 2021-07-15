@@ -161,6 +161,8 @@ class Label : public View
      */
     void setTickerState(bool active);
 
+    float getTextAnimation();
+    void resetTextAnimation();
     void animate(LabelAnimation animation);
 };
 

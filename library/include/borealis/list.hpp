@@ -35,9 +35,7 @@ namespace brls
 class ListItem : public View
 {
   protected:
-    bool valueFaint;
-
-    float valueAnimation = 0.0f;
+    bool valueFaint = false, oldValueFaint = false;
 
     bool checked = false; // check mark on the right
 

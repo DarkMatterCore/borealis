@@ -44,11 +44,10 @@ Label::Label(LabelStyle labelStyle, std::string text, bool multiline)
 
 Label::~Label()
 {
-    menu_animation_ctx_tag tag = (uintptr_t) & this->tickerOffset;
-    menu_animation_kill_by_tag(&tag);
+    menu_timer_kill(&this->tickerWaitTimer);
+    this->stopTickerAnimation();
 
-    tag = (uintptr_t) & this->textAnimation;
-    menu_animation_kill_by_tag(&tag);
+    this->resetTextAnimation();
 
     Application::getGlobalFocusChangeEvent()->unsubscribe(this->parentFocusSubscription);
 }
@@ -399,17 +398,32 @@ float Label::getLineHeight(LabelStyle labelStyle)
     }
 }
 
+float Label::getTextAnimation()
+{
+    return this->textAnimation;
+}
+
+void Label::resetTextAnimation()
+{
+    this->textAnimation = 0.0F;
+
+    menu_animation_ctx_tag tag = (uintptr_t) & this->textAnimation;
+    menu_animation_kill_by_tag(&tag);
+}
+
 void Label::animate(LabelAnimation animation)
 {
+    if (!this->multiline) return;
+
     Style* style = Application::getStyle();
 
-    menu_animation_ctx_tag tag = (uintptr_t) &this->textAnimation;
+    menu_animation_ctx_tag tag = (uintptr_t) & this->textAnimation;
     menu_animation_kill_by_tag(&tag);
 
     this->textAnimation = animation == LabelAnimation::EASE_IN ? 0.0F : 1.0F;
 
     menu_animation_ctx_entry_t entry;
-    entry.cb           = [this](void *userdata) { this->startTickerAnimation(); };
+    entry.cb           = [this](void *userdata) { this->resetTextAnimation(); };
     entry.duration     = style->AnimationDuration.highlight;
     entry.easing_enum  = EASING_IN_OUT_QUAD;
     entry.subject      = &this->textAnimation;
@@ -418,7 +432,6 @@ void Label::animate(LabelAnimation animation)
     entry.tick         = [](void* userdata) {};
     entry.userdata     = nullptr;
 
-    this->stopTickerAnimation();
     menu_animation_push(&entry);
 }
 
