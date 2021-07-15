@@ -305,10 +305,10 @@ void ListItem::setValue(std::string value, bool faint, bool animate)
     this->valueFaint    = faint;
 
     if (!this->valueView) {
-        this->valueView = new Label(LabelStyle::LIST_ITEM_VALUE, value, false);
+        this->valueView = new Label(this->valueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE, value, false);
         this->valueView->setParent(this);
 
-        this->oldValueView = new Label(LabelStyle::LIST_ITEM_VALUE, "", false);
+        this->oldValueView = new Label(this->oldValueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE, "", false);
         this->oldValueView->setParent(this);
     } else {
         this->oldValueView->setText(this->valueView->getText());
