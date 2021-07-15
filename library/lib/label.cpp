@@ -405,7 +405,7 @@ float Label::getTextAnimation()
 
 void Label::resetTextAnimation()
 {
-    this->textAnimation = 0.0F;
+    this->textAnimation = 1.0F;
 
     menu_animation_ctx_tag tag = (uintptr_t) & this->textAnimation;
     menu_animation_kill_by_tag(&tag);

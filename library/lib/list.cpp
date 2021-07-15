@@ -369,7 +369,7 @@ void ListItem::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned heigh
 
     // Value
     if (hasValue) {
-        if (this->valueView->getTextAnimation() != 0.0f)
+        if (this->valueView->getTextAnimation() != 1.0f)
         {
             this->valueView->frame(ctx);
             this->oldValueView->frame(ctx);
