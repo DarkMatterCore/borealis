@@ -75,7 +75,7 @@ class Label : public View
     int customFont;
     bool useCustomFont = false;
 
-    unsigned textWidth = 0, textHeight = 0;
+    unsigned textWidth = 0, textHeight = 0, boundingBoxHeight = 0;
     unsigned oldWidth = 0;
 
     unsigned textTickerWidth = 0;
@@ -95,7 +95,7 @@ class Label : public View
     void onParentFocus();
     void onParentUnfocus();
 
-    void updateTextDimensions();
+    void updateTextDimensions(bool invalidateParent = false);
 
   public:
     Label(LabelStyle labelStyle, std::string text, bool multiline = false);

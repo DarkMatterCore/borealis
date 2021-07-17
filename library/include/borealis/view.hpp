@@ -183,6 +183,9 @@ class View
 
     void setBackground(ViewBackground background);
 
+    void setX(unsigned x);
+    void setY(unsigned y);
+    void setCoords(unsigned x, unsigned y);
     void setWidth(unsigned width);
     void setHeight(unsigned height);
 

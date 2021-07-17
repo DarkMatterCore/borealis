@@ -447,6 +447,22 @@ bool View::hasParent()
     return this->parent;
 }
 
+void View::setX(unsigned x)
+{
+    this->x = x;
+}
+
+void View::setY(unsigned y)
+{
+    this->y = y;
+}
+
+void View::setCoords(unsigned x, unsigned y)
+{
+    this->x = x;
+    this->y = y;
+}
+
 void View::setWidth(unsigned width)
 {
     this->width = width;

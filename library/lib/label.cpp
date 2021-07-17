@@ -19,6 +19,7 @@
 
 #include <borealis/application.hpp>
 #include <borealis/label.hpp>
+#include <cmath>
 
 namespace brls
 {
@@ -55,11 +56,15 @@ Label::~Label()
 void Label::setHorizontalAlign(NVGalign align)
 {
     this->horizontalAlign = align;
+
+    this->updateTextDimensions();
 }
 
 void Label::setVerticalAlign(NVGalign align)
 {
     this->verticalAlign = align;
+
+    this->updateTextDimensions();
 }
 
 void Label::setFontSize(unsigned size)
@@ -74,7 +79,7 @@ void Label::setText(std::string text)
     this->text = text;
     this->textTicker = text + "          " + text;
 
-    this->updateTextDimensions();
+    this->updateTextDimensions(true);
 }
 
 void Label::setStyle(LabelStyle style)
@@ -90,8 +95,7 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
 {
     if (this->text == "") return;
 
-    float bounds[4];
-    NVGalign hor_align = this->multiline ? this->horizontalAlign : NVG_ALIGN_LEFT;
+    NVGalign ver_align = this->multiline ? NVG_ALIGN_TOP : this->verticalAlign;
 
     nvgSave(vg);
     nvgReset(vg);
@@ -100,13 +104,13 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
     nvgFontFaceId(vg, this->getFont(stash));
 
     nvgTextLineHeight(vg, this->lineHeight);
-    nvgTextAlign(vg, hor_align | NVG_ALIGN_TOP);
+    nvgTextAlign(vg, this->horizontalAlign | ver_align);
 
     // Update width or height to text bounds
     if (this->multiline)
     {
+        float bounds[4];
         nvgTextBoxBounds(vg, this->x, this->y, this->width, this->text.c_str(), nullptr, bounds);
-
         this->height = bounds[3] - bounds[1]; // ymax - ymin
     }
     else
@@ -119,9 +123,8 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
         if (this->horizontalAlign == NVG_ALIGN_RIGHT)
             this->x += this->oldWidth - this->textWidth;
 
-        nvgTextBounds(vg, 0, 0, "…", nullptr, bounds);
-        unsigned ellipsisWidth = bounds[2] - bounds[0];
         unsigned textEllipsisWidth = 0, diff = 0;
+        unsigned ellipsisWidth = std::ceil(nvgTextBounds(vg, 0, 0, "…", nullptr, nullptr));
 
         do {
             diff += ellipsisWidth;
@@ -129,8 +132,7 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
             this->textEllipsis = this->text.substr(0, this->text.size() * std::min(1.0F, static_cast<float>(this->oldWidth - diff) / static_cast<float>(this->textWidth)));
             this->textEllipsis += "…";
 
-            nvgTextBounds(vg, 0, 0, this->textEllipsis.c_str(), nullptr, bounds);
-            textEllipsisWidth = bounds[2] - bounds[0];
+            textEllipsisWidth = std::ceil(nvgTextBounds(vg, 0, 0, this->textEllipsis.c_str(), nullptr, nullptr));
         } while(this->oldWidth && textEllipsisWidth >= this->oldWidth);
     }
 
@@ -144,12 +146,7 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
     NVGcolor valueColor = a(this->getColor(ctx->theme));
     float fontSize = static_cast<float>(this->fontSize);
 
-    NVGalign hor_align = this->horizontalAlign;
     NVGalign ver_align = this->multiline ? NVG_ALIGN_TOP : this->verticalAlign;
-
-    const char *str = NULL;
-    bool use_ticker = false;
-    unsigned scissorX = x, scissorY = y;
 
     // Update color and size if we're dealing with value animation
     if (!this->multiline && this->textAnimation < 1.0F) {
@@ -164,44 +161,40 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
     nvgFontFaceId(vg, this->getFont(ctx->fontStash));
 
     nvgTextLineHeight(vg, this->lineHeight);
-    nvgTextAlign(vg, hor_align | ver_align);
+    nvgTextAlign(vg, this->horizontalAlign | ver_align);
 
     nvgBeginPath(vg);
 
     if (this->multiline) {
         nvgTextBox(vg, x, y, width, this->text.c_str(), nullptr);
     } else {
+        unsigned boxX = x, boxY = y;
+        unsigned boxWidth = this->oldWidth && this->oldWidth < this->textWidth ? this->oldWidth : this->textWidth; // this->width == width == this->textWidth (check layout)
+        unsigned boxHeight = height > this->boundingBoxHeight ? height : this->boundingBoxHeight;
+
+        const char *str = NULL;
+        bool use_ticker = false;
+
         // Adjust horizontal alignment
-        if (hor_align == NVG_ALIGN_RIGHT) {
+        if (this->horizontalAlign == NVG_ALIGN_RIGHT) {
             x += width;
-            scissorX = x - this->textWidth;
-        } else if (hor_align == NVG_ALIGN_CENTER) {
+            boxX = x - boxWidth;
+        } else if (this->horizontalAlign == NVG_ALIGN_CENTER) {
             x += width / 2;
-            scissorX = x - this->textWidth / 2;
+            boxX = x - boxWidth / 2;
         }
 
         // Adjust vertical alignment
         if (ver_align == NVG_ALIGN_BOTTOM || ver_align == NVG_ALIGN_BASELINE) {
             y += height;
-            scissorY = y - this->textHeight;
+            boxY = y - this->boundingBoxHeight;
         } else if (ver_align == NVG_ALIGN_MIDDLE) {
             y += height / 2;
-            scissorY = y - this->textHeight / 2;
-        }
-
-        // Calculate text ticker width, if needed
-        if (this->tickerActive && !this->textTickerWidth) {
-            float bounds[4];
-
-            nvgTextBounds(vg, x, y, this->text.c_str(), nullptr, bounds);
-            this->textTickerWidth = (bounds[2] - bounds[0]);
-
-            nvgTextBounds(vg, x, y, this->textTicker.c_str(), nullptr, bounds);
-            this->textTickerWidth = (bounds[2] - bounds[0]) - this->textTickerWidth;
+            boxY = y - this->boundingBoxHeight / 2;
         }
 
         // Select the string to display
-        if (this->labelStyle != LabelStyle::FPS && this->oldWidth && this->textWidth > this->oldWidth) {
+        if (this->labelStyle != LabelStyle::FPS && this->textWidth > boxWidth) {
             if (this->textAnimation >= 1.0F && this->tickerActive) {
                 str = this->textTicker.c_str();
                 use_ticker = true;
@@ -215,7 +208,7 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
         // Scissor area, if needed
         if (use_ticker) {
             nvgSave(vg);
-            nvgIntersectScissor(vg, scissorX, scissorY, this->oldWidth, this->textHeight + this->textHeight / 4); // Hacky height
+            nvgIntersectScissor(vg, boxX, boxY, boxWidth, boxHeight);
             x -= this->tickerOffset;
         }
 
@@ -229,6 +222,8 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
 
 void Label::startTickerAnimation()
 {
+    this->updateTextDimensions();
+
     this->tickerWaitTimerCtx.duration = 1500;
     this->tickerWaitTimerCtx.cb = [&](void *userdata) {
         menu_animation_ctx_tag tag = (uintptr_t) & this->tickerOffset;
@@ -447,16 +442,16 @@ void Label::onParentUnfocus()
     this->setTickerState(false);
 }
 
-void Label::updateTextDimensions()
+void Label::updateTextDimensions(bool invalidateParent)
 {
-    this->textWidth = this->textHeight = this->textTickerWidth = 0;
+    this->textWidth = this->textHeight = this->textTickerWidth = this->boundingBoxHeight = 0;
     this->textEllipsis = "";
 
     if (this->multiline || this->text == "") return;
 
+    float bounds[4];
     NVGcontext *vg = Application::getNVGContext();
     FontStash *stash = Application::getFontStash();
-    float bounds[4];
 
     nvgSave(vg);
     nvgReset(vg);
@@ -464,17 +459,16 @@ void Label::updateTextDimensions()
     nvgFontSize(vg, this->fontSize);
     nvgFontFaceId(vg, this->getFont(stash));
 
-    nvgTextLineHeight(vg, this->lineHeight);
-    nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+    nvgTextAlign(vg, this->horizontalAlign | this->verticalAlign);
 
-    nvgTextBounds(vg, 0, 0, this->text.c_str(), nullptr, bounds);
-
-    this->textWidth  = bounds[2] - bounds[0]; // xmax - xmin
-    this->textHeight = bounds[3] - bounds[1]; // ymax - ymin
+    this->textWidth         = std::ceil(nvgTextBounds(vg, 0, 0, this->text.c_str(), nullptr, bounds));
+    this->textHeight        = std::ceil(bounds[3] - bounds[1]); // ymax - ymin
+    this->boundingBoxHeight = std::ceil((bounds[3] - bounds[1]) * 1.25f); // Fixes scissor bounding box height
+    this->textTickerWidth   = std::ceil(nvgTextBounds(vg, 0, 0, this->textTicker.c_str(), nullptr, nullptr)) - this->textWidth;
 
     nvgRestore(vg);
 
-    if (this->hasParent()) this->getParent()->invalidate();
+    if (invalidateParent && this->hasParent()) this->getParent()->invalidate();
 }
 
 } // namespace brls

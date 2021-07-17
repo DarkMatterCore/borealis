@@ -20,6 +20,7 @@
 #include <borealis/applet_frame.hpp>
 #include <borealis/application.hpp>
 #include <borealis/i18n.hpp>
+#include <cmath>
 
 using namespace brls::i18n::literals;
 
@@ -88,10 +89,7 @@ void AppletFrame::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned he
             nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
             nvgText(vg, x_pos, y + style->PopupFrame.subTitleTopPadding, this->subTitleLeft.c_str(), nullptr);
 
-            float bounds[4];
-            nvgTextBounds(vg, x, y, this->subTitleLeft.c_str(), nullptr, bounds);
-
-            x_pos += static_cast<int>(bounds[2] - bounds[0]);
+            x_pos += std::ceil(nvgTextBounds(vg, x, y, this->subTitleLeft.c_str(), nullptr, nullptr));
         }
 
         // Sub title separator

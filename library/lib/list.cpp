@@ -229,6 +229,7 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
     unsigned leftPadding = hasThumbnail ? this->thumbnailView->getWidth() + style->List.Item.thumbnailPadding * 2 : style->List.Item.padding;
     unsigned rightPadding = (hasSubLabel || !hasValue) ? style->List.Item.padding : this->valueView->getTextWidth() + style->List.Item.padding * 2;
 
+    // Label
     this->labelView->setBoundaries(x + leftPadding, y + (baseHeight / (hasSubLabel ? 3 : 2)), width - leftPadding - rightPadding, 0);
     this->labelView->invalidate();
 

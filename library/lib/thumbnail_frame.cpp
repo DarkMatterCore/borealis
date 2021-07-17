@@ -215,8 +215,6 @@ void ThumbnailSidebar::setSubtitle(std::string subTitle)
     }
 
     this->subTitle->setText(subTitle);
-
-    this->invalidate();
 }
 
 // TODO: Add ellipsis if the title exceeds three lines
@@ -229,8 +227,6 @@ void ThumbnailSidebar::setTitle(std::string title)
     }
 
     this->title->setText(title);
-
-    this->invalidate();
 }
 
 ThumbnailSidebar::~ThumbnailSidebar()
