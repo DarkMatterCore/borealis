@@ -123,13 +123,15 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
         if (this->horizontalAlign == NVG_ALIGN_RIGHT)
             this->x += this->oldWidth - this->textWidth;
 
-        unsigned textEllipsisWidth = 0, diff = 0;
+        // Generate text with ellipsis (…)
+        size_t utf8_str_len = this->getUtf8StringLength(this->text);
         unsigned ellipsisWidth = std::ceil(nvgTextBounds(vg, 0, 0, "…", nullptr, nullptr));
+        unsigned diff = 0, textEllipsisWidth = 0;
 
         do {
             diff += ellipsisWidth;
 
-            this->textEllipsis = this->text.substr(0, this->text.size() * std::min(1.0F, static_cast<float>(this->oldWidth - diff) / static_cast<float>(this->textWidth)));
+            this->textEllipsis = this->getUtf8SubString(this->text, 0, utf8_str_len * std::min(1.0F, static_cast<float>(this->oldWidth - diff) / static_cast<float>(this->textWidth)));
             this->textEllipsis += "…";
 
             textEllipsisWidth = std::ceil(nvgTextBounds(vg, 0, 0, this->textEllipsis.c_str(), nullptr, nullptr));
@@ -318,11 +320,15 @@ void Label::setFont(int font)
 {
     this->customFont    = font;
     this->useCustomFont = true;
+
+    this->updateTextDimensions();
 }
 
 void Label::unsetFont()
 {
     this->useCustomFont = false;
+
+    this->updateTextDimensions();
 }
 
 int Label::getFont(FontStash* stash)
@@ -469,6 +475,136 @@ void Label::updateTextDimensions(bool invalidateParent)
     nvgRestore(vg);
 
     if (invalidateParent && this->hasParent()) this->getParent()->invalidate();
+}
+
+// Taken from libnx
+static ssize_t decode_utf8(uint32_t *out, const uint8_t *in)
+{
+    uint8_t code1, code2, code3, code4;
+
+    code1 = *in++;
+    if(code1 < 0x80)
+    {
+        /* 1-byte sequence */
+        *out = code1;
+        return 1;
+    }
+    else if(code1 < 0xC2)
+    {
+        return -1;
+    }
+    else if(code1 < 0xE0)
+    {
+        /* 2-byte sequence */
+        code2 = *in++;
+        if((code2 & 0xC0) != 0x80)
+        {
+        return -1;
+        }
+
+        *out = (code1 << 6) + code2 - 0x3080;
+        return 2;
+    }
+    else if(code1 < 0xF0)
+    {
+        /* 3-byte sequence */
+        code2 = *in++;
+        if((code2 & 0xC0) != 0x80)
+        {
+        return -1;
+        }
+        if(code1 == 0xE0 && code2 < 0xA0)
+        {
+        return -1;
+        }
+
+        code3 = *in++;
+        if((code3 & 0xC0) != 0x80)
+        {
+        return -1;
+        }
+
+        *out = (code1 << 12) + (code2 << 6) + code3 - 0xE2080;
+        return 3;
+    }
+    else if(code1 < 0xF5)
+    {
+        /* 4-byte sequence */
+        code2 = *in++;
+        if((code2 & 0xC0) != 0x80)
+        {
+        return -1;
+        }
+        if(code1 == 0xF0 && code2 < 0x90)
+        {
+        return -1;
+        }
+        if(code1 == 0xF4 && code2 >= 0x90)
+        {
+        return -1;
+        }
+
+        code3 = *in++;
+        if((code3 & 0xC0) != 0x80)
+        {
+        return -1;
+        }
+
+        code4 = *in++;
+        if((code4 & 0xC0) != 0x80)
+        {
+        return -1;
+        }
+
+        *out = (code1 << 18) + (code2 << 12) + (code3 << 6) + code4 - 0x3C82080;
+        return 4;
+    }
+
+    return -1;
+}
+
+size_t Label::getUtf8StringLength(const std::string& str)
+{
+    if (str == "") return 0;
+
+    const uint8_t *p = reinterpret_cast<const uint8_t*>(str.c_str());
+    ssize_t units = 0;
+    uint32_t code = 0;
+
+    size_t ret = 0;
+
+    do {
+        units = decode_utf8(&code, p);
+        if (units < 0) break;
+        p += units;
+        ret++;
+    } while(code >= ' ');
+
+    return ret;
+}
+
+std::string Label::getUtf8SubString(const std::string& str, size_t start, size_t len)
+{
+    if (!len) return "";
+
+    const uint8_t *p = reinterpret_cast<const uint8_t*>(str.c_str());
+    ssize_t units = 0;
+    uint32_t code = 0;
+
+    size_t i = 0;
+    std::string ret = "";
+
+    do {
+        units = decode_utf8(&code, p);
+        if (units < 0) break;
+
+        if (i >= start) ret.append(reinterpret_cast<const char*>(p), static_cast<size_t>(units));
+
+        p += units;
+        i++;
+    } while(code >= ' ' && i < (start + len));
+
+    return ret;
 }
 
 } // namespace brls
