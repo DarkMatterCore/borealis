@@ -263,7 +263,6 @@ class Style
     // FramerateCounter
     struct
     {
-        unsigned width;
         unsigned height;
     } FramerateCounter;
 

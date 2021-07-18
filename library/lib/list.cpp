@@ -127,6 +127,7 @@ ListItem::ListItem(std::string label, std::string description, std::string subLa
     if (subLabel != "")
     {
         this->subLabelView = new Label(LabelStyle::DESCRIPTION, subLabel, false);
+        this->subLabelView->setVerticalAlign(NVG_ALIGN_TOP);
         this->subLabelView->setParent(this);
     }
 
@@ -226,8 +227,12 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
     if (this->descriptionView)
         baseHeight -= this->descriptionView->getHeight() + style->List.Item.descriptionSpacing;
 
-    unsigned leftPadding = hasThumbnail ? this->thumbnailView->getWidth() + style->List.Item.thumbnailPadding * 2 : style->List.Item.padding;
-    unsigned rightPadding = (hasSubLabel || !hasValue) ? style->List.Item.padding : this->valueView->getTextWidth() + style->List.Item.padding * 2;
+    unsigned valueBoxWidth  = width / 3;
+    unsigned valueTextWidth = hasValue ? this->valueView->getTextWidth() : valueBoxWidth;
+    if (valueBoxWidth > valueTextWidth) valueBoxWidth = valueTextWidth;
+
+    unsigned leftPadding  = hasThumbnail ? this->thumbnailView->getWidth() + style->List.Item.thumbnailPadding * 2 : style->List.Item.padding;
+    unsigned rightPadding = (hasSubLabel || !hasValue) ? style->List.Item.padding : valueBoxWidth + style->List.Item.padding * 2;
 
     // Label
     this->labelView->setBoundaries(x + leftPadding, y + (baseHeight / (hasSubLabel ? 3 : 2)), width - leftPadding - rightPadding, 0);
@@ -238,24 +243,20 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
         unsigned valueX = x + width - style->List.Item.padding;
         unsigned valueY = y + (hasSubLabel ? baseHeight - baseHeight / 3 : baseHeight / 2);
 
-        this->valueView->setBoundaries(valueX, valueY, 0, 0);
-        if (hasSubLabel) this->valueView->setVerticalAlign(NVG_ALIGN_TOP);
-        this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
+        this->valueView->setBoundaries(valueX, valueY, valueBoxWidth, 0);
+        this->valueView->setVerticalAlign(hasSubLabel ? NVG_ALIGN_TOP : NVG_ALIGN_MIDDLE);
         this->valueView->invalidate();
 
-        this->oldValueView->setBoundaries(valueX, valueY, 0, 0);
-        if (hasSubLabel) this->oldValueView->setVerticalAlign(NVG_ALIGN_TOP);
-        this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
+        this->oldValueView->setBoundaries(valueX, valueY, valueBoxWidth, 0);
+        this->oldValueView->setVerticalAlign(hasSubLabel ? NVG_ALIGN_TOP : NVG_ALIGN_MIDDLE);
         this->oldValueView->invalidate();
     }
 
     // Sub Label
     if (hasSubLabel)
     {
-        rightPadding = hasValue ? this->valueView->getTextWidth() + style->List.Item.padding * 2 : style->List.Item.padding;
-
+        rightPadding = hasValue ? valueBoxWidth + style->List.Item.padding * 2 : style->List.Item.padding;
         this->subLabelView->setBoundaries(x + leftPadding, y + baseHeight - baseHeight / 3, width - leftPadding - rightPadding, 0);
-        this->subLabelView->setVerticalAlign(NVG_ALIGN_TOP);
         this->subLabelView->invalidate();
     }
 
@@ -307,9 +308,11 @@ void ListItem::setValue(std::string value, bool faint, bool animate)
 
     if (!this->valueView) {
         this->valueView = new Label(this->valueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE, value, false);
+        this->valueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
         this->valueView->setParent(this);
 
         this->oldValueView = new Label(this->oldValueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE, "", false);
+        this->oldValueView->setHorizontalAlign(NVG_ALIGN_RIGHT);
         this->oldValueView->setParent(this);
     } else {
         this->oldValueView->setText(this->valueView->getText());
@@ -469,6 +472,7 @@ void ListItem::setSubLabel(std::string subLabel)
 {
     if (!this->subLabelView) {
         this->subLabelView = new Label(LabelStyle::DESCRIPTION, subLabel, false);
+        this->subLabelView->setVerticalAlign(NVG_ALIGN_TOP);
         this->subLabelView->setParent(this);
     } else {
         this->subLabelView->setText(subLabel);

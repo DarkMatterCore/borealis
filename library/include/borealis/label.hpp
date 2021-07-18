@@ -32,6 +32,7 @@ enum class LabelStyle : std::uint32_t
     SMALL,
     DESCRIPTION,
     FPS,
+    UNFOCUSED_TICKER,
     CRASH,
     BUTTON_PRIMARY,
     BUTTON_PRIMARY_DISABLED,
@@ -109,7 +110,7 @@ class Label : public View
 
     void setVerticalAlign(NVGalign align);
     void setHorizontalAlign(NVGalign align);
-    void setText(std::string text);
+    void setText(std::string text, bool invalidateParent = true);
     void setStyle(LabelStyle style);
     void setFontSize(unsigned size);
 

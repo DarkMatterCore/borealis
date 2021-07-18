@@ -219,7 +219,6 @@ HorizonStyle::HorizonStyle()
     };
 
     this->FramerateCounter = {
-        .width  = 125,
         .height = 26
     };
 

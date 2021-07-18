@@ -38,10 +38,9 @@ enum class HeaderStyle
 class AppletFrame : public View
 {
   private:
-    std::string title      = "";
-    std::string footerText = "";
-
-    std::string subTitleLeft = "", subTitleRight = "";
+    Label *title = nullptr;
+    Label *subTitleLeft = nullptr, *subTitleRight = nullptr;
+    Label *footer = nullptr;
 
     View* icon = nullptr;
     Hint* hint = nullptr;

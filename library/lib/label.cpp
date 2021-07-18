@@ -35,22 +35,26 @@ Label::Label(LabelStyle labelStyle, std::string text, bool multiline)
 
     this->updateTextDimensions();
 
-    this->parentFocusSubscription = Application::getGlobalFocusChangeEvent()->subscribe([this](View *view) {
-        if (view == this->getParent())
-            this->onParentFocus();
-        else
-            this->onParentUnfocus();
-    });
+    if (this->labelStyle == LabelStyle::UNFOCUSED_TICKER) {
+        this->onParentFocus();
+    } else {
+        this->parentFocusSubscription = Application::getGlobalFocusChangeEvent()->subscribe([this](View *view) {
+            if (view && view == this->getParent())
+                this->onParentFocus();
+            else
+                this->onParentUnfocus();
+        });
+    }
 }
 
 Label::~Label()
 {
-    menu_timer_kill(&this->tickerWaitTimer);
     this->stopTickerAnimation();
 
     this->resetTextAnimation();
 
-    Application::getGlobalFocusChangeEvent()->unsubscribe(this->parentFocusSubscription);
+    if (this->labelStyle != LabelStyle::UNFOCUSED_TICKER)
+        Application::getGlobalFocusChangeEvent()->unsubscribe(this->parentFocusSubscription);
 }
 
 void Label::setHorizontalAlign(NVGalign align)
@@ -74,16 +78,19 @@ void Label::setFontSize(unsigned size)
     this->updateTextDimensions();
 }
 
-void Label::setText(std::string text)
+void Label::setText(std::string text, bool invalidateParent)
 {
     this->text = text;
     this->textTicker = text + "          " + text;
 
-    this->updateTextDimensions(true);
+    this->updateTextDimensions(invalidateParent);
 }
 
 void Label::setStyle(LabelStyle style)
 {
+    if (this->labelStyle == LabelStyle::UNFOCUSED_TICKER)
+        return;
+
     this->labelStyle = style;
     this->lineHeight = this->getLineHeight(style);
     this->fontSize   = this->getFontSize(style);
@@ -118,10 +125,14 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
         this->oldWidth = this->width;
         this->width = this->textWidth;
 
-        // offset the position to compensate the width change
-        // and keep right alignment
-        if (this->horizontalAlign == NVG_ALIGN_RIGHT)
-            this->x += this->oldWidth - this->textWidth;
+        // Offset the position to keep the right alignment
+        unsigned boxWidth = (this->oldWidth && this->oldWidth < this->textWidth) ? this->oldWidth : this->textWidth;
+
+        if (this->horizontalAlign == NVG_ALIGN_RIGHT) {
+            this->x -= boxWidth;
+        } else if (this->horizontalAlign == NVG_ALIGN_CENTER) {
+            this->x -= boxWidth / 2;
+        }
 
         // Generate text with ellipsis (…)
         size_t utf8_str_len = this->getUtf8StringLength(this->text);
@@ -171,7 +182,7 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
         nvgTextBox(vg, x, y, width, this->text.c_str(), nullptr);
     } else {
         unsigned boxX = x, boxY = y;
-        unsigned boxWidth = this->oldWidth && this->oldWidth < this->textWidth ? this->oldWidth : this->textWidth; // this->width == width == this->textWidth (check layout)
+        unsigned boxWidth = (this->oldWidth && this->oldWidth < this->textWidth) ? this->oldWidth : this->textWidth; // this->width == width == this->textWidth (check layout)
         unsigned boxHeight = height > this->boundingBoxHeight ? height : this->boundingBoxHeight;
 
         const char *str = NULL;
@@ -179,11 +190,9 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
 
         // Adjust horizontal alignment
         if (this->horizontalAlign == NVG_ALIGN_RIGHT) {
-            x += width;
-            boxX = x - boxWidth;
+            x += boxWidth;
         } else if (this->horizontalAlign == NVG_ALIGN_CENTER) {
-            x += width / 2;
-            boxX = x - boxWidth / 2;
+            x += boxWidth / 2;
         }
 
         // Adjust vertical alignment
@@ -251,8 +260,11 @@ void Label::startTickerAnimation()
 
 void Label::stopTickerAnimation()
 {
+    menu_timer_kill(&this->tickerWaitTimer);
+
     menu_animation_ctx_tag tag = (uintptr_t) & this->tickerOffset;
     menu_animation_kill_by_tag(&tag);
+
     this->tickerOffset = 0.0f;
 }
 
@@ -351,6 +363,7 @@ unsigned Label::getFontSize(LabelStyle labelStyle)
     switch (labelStyle)
     {
         case LabelStyle::REGULAR:
+        case LabelStyle::UNFOCUSED_TICKER:
             return style->Label.regularFontSize;
         case LabelStyle::MEDIUM:
             return style->Label.mediumFontSize;
@@ -499,7 +512,7 @@ static ssize_t decode_utf8(uint32_t *out, const uint8_t *in)
         code2 = *in++;
         if((code2 & 0xC0) != 0x80)
         {
-        return -1;
+            return -1;
         }
 
         *out = (code1 << 6) + code2 - 0x3080;
@@ -511,17 +524,17 @@ static ssize_t decode_utf8(uint32_t *out, const uint8_t *in)
         code2 = *in++;
         if((code2 & 0xC0) != 0x80)
         {
-        return -1;
+            return -1;
         }
         if(code1 == 0xE0 && code2 < 0xA0)
         {
-        return -1;
+            return -1;
         }
 
         code3 = *in++;
         if((code3 & 0xC0) != 0x80)
         {
-        return -1;
+            return -1;
         }
 
         *out = (code1 << 12) + (code2 << 6) + code3 - 0xE2080;
@@ -533,27 +546,27 @@ static ssize_t decode_utf8(uint32_t *out, const uint8_t *in)
         code2 = *in++;
         if((code2 & 0xC0) != 0x80)
         {
-        return -1;
+            return -1;
         }
         if(code1 == 0xF0 && code2 < 0x90)
         {
-        return -1;
+            return -1;
         }
         if(code1 == 0xF4 && code2 >= 0x90)
         {
-        return -1;
+            return -1;
         }
 
         code3 = *in++;
         if((code3 & 0xC0) != 0x80)
         {
-        return -1;
+            return -1;
         }
 
         code4 = *in++;
         if((code4 & 0xC0) != 0x80)
         {
-        return -1;
+            return -1;
         }
 
         *out = (code1 << 18) + (code2 << 12) + (code3 << 6) + code4 - 0x3C82080;

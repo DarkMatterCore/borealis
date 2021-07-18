@@ -724,15 +724,7 @@ void Application::resizeFramerateCounter()
     if (!Application::framerateCounter)
         return;
 
-    Style* style                   = Application::getStyle();
-    unsigned framerateCounterWidth = style->FramerateCounter.width;
-    unsigned width                 = WINDOW_WIDTH;
-
-    Application::framerateCounter->setBoundaries(
-        width - framerateCounterWidth,
-        0,
-        framerateCounterWidth,
-        style->FramerateCounter.height);
+    Application::framerateCounter->setBoundaries(WINDOW_WIDTH, 0, Application::framerateCounter->getTextWidth(), Application::getStyle()->FramerateCounter.height);
     Application::framerateCounter->invalidate();
 }
 
@@ -1031,7 +1023,10 @@ void FramerateCounter::frame(FrameContext* ctx)
     {
         char fps[10];
         snprintf(fps, sizeof(fps), "FPS: %03d", this->frames);
-        this->setText(std::string(fps));
+
+        this->setText(std::string(fps), false);
+        this->setBoundaries(WINDOW_WIDTH, 0, this->getTextWidth(), this->height);
+        this->invalidate();
 
         this->frames     = 0;
         this->lastSecond = current;
