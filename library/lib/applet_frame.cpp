@@ -30,6 +30,7 @@ namespace brls
 AppletFrame::AppletFrame(bool padLeft, bool padRight)
 {
     Style* style = Application::getStyle();
+    std::string* commonFooter = Application::getCommonFooter();
 
     if (padLeft)
         this->leftPadding = style->AppletFrame.separatorSpacing;
@@ -37,7 +38,7 @@ AppletFrame::AppletFrame(bool padLeft, bool padRight)
     if (padRight)
         this->rightPadding = style->AppletFrame.separatorSpacing;
 
-    this->footer = new Label(LabelStyle::UNFOCUSED_TICKER, "", false);
+    this->footer = new Label(LabelStyle::UNFOCUSED_TICKER, *commonFooter, false);
     this->footer->setFontSize(style->AppletFrame.footerTextSize);
     this->footer->setParent(this);
 
@@ -173,13 +174,6 @@ void AppletFrame::layout(NVGcontext* vg, Style* style, FontStash* stash)
     unsigned sideFooterWidth        = (footerWidth - footerSeparatorWidth) / 2;
 
     unsigned hintWidth              = hasFooter ? sideFooterWidth : footerWidth;
-
-    std::string* commonFooter = Application::getCommonFooter();
-
-    if (!hasFooter && *commonFooter != "") {
-        this->footer->setText(*commonFooter, false);
-        hasFooter = true;
-    }
 
     // Title
     if (hasTitle) {

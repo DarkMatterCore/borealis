@@ -44,25 +44,27 @@ void ScrollView::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned hei
     nvgRestore(vg);
 
     // Draw scrollbar
-    float contentViewHeight = static_cast<float>(this->contentView->getHeight());
-    float scrollViewHeight = static_cast<float>(this->height - style->List.scrollBarPadding * 2);
+    if (this->drawScrollBar) {
+        float contentViewHeight = static_cast<float>(this->contentView->getHeight());
+        float scrollViewHeight = static_cast<float>(this->height - style->List.scrollBarPadding * 2);
 
-    if (contentViewHeight > scrollViewHeight)
-    {
-        float scrollbarHeight = (scrollViewHeight * scrollViewHeight) / contentViewHeight;
-        if (scrollbarHeight < style->List.scrollBarMinimumHeight) scrollbarHeight = style->List.scrollBarMinimumHeight;
+        if (contentViewHeight > scrollViewHeight)
+        {
+            float scrollbarHeight = (scrollViewHeight * scrollViewHeight) / contentViewHeight;
+            if (scrollbarHeight < style->List.scrollBarMinimumHeight) scrollbarHeight = style->List.scrollBarMinimumHeight;
 
-        float scrollbarPos = (this->scrollY * contentViewHeight) / (contentViewHeight - scrollViewHeight) * (scrollViewHeight - std::ceil(scrollbarHeight));
+            float scrollbarPos = (this->scrollY * contentViewHeight) / (contentViewHeight - scrollViewHeight) * (scrollViewHeight - std::ceil(scrollbarHeight));
 
-        nvgFillColor(vg, RGBA(ctx->theme->scrollBarColor.r, ctx->theme->scrollBarColor.g, ctx->theme->scrollBarColor.b, this->scrollBarAlpha * 0xFF));
-        nvgBeginPath(vg);
-        nvgRoundedRect(vg,
-            this->x + this->width - style->List.scrollBarWidth,
-            this->y + style->List.scrollBarPadding + std::floor(scrollbarPos),
-            style->List.scrollBarWidth,
-            std::floor(scrollbarHeight),
-            style->List.scrollBarRadius);
-        nvgFill(vg);
+            nvgFillColor(vg, RGBA(ctx->theme->scrollBarColor.r, ctx->theme->scrollBarColor.g, ctx->theme->scrollBarColor.b, this->scrollBarAlpha * 0xFF));
+            nvgBeginPath(vg);
+            nvgRoundedRect(vg,
+                this->x + this->width - style->List.scrollBarWidth,
+                this->y + style->List.scrollBarPadding + std::floor(scrollbarPos),
+                style->List.scrollBarWidth,
+                std::floor(scrollbarHeight),
+                style->List.scrollBarRadius);
+            nvgFill(vg);
+        }
     }
 }
 
@@ -222,18 +224,20 @@ void ScrollView::startScrolling(bool animated, float newScroll)
         menu_animation_push(&entry_scroll);
 
         // Animate scrollbar
-        this->scrollBarAlpha = Application::getTheme()->scrollBarAlphaFull;
-        menu_animation_ctx_entry_t entry_bar;
-        entry_bar.cb           = nullptr;
-        entry_bar.duration     = 500;
-        entry_bar.easing_enum  = EASING_LINEAR;
-        entry_bar.subject      = &this->scrollBarAlpha;
-        entry_bar.tag          = tag_bar;
-        entry_bar.target_value = Application::getTheme()->scrollBarAlphaNormal;
-        entry_bar.tick         = [](void* userdata) {};
-        entry_bar.userdata     = nullptr;
+        if (this->drawScrollBar) {
+            this->scrollBarAlpha = Application::getTheme()->scrollBarAlphaFull;
+            menu_animation_ctx_entry_t entry_bar;
+            entry_bar.cb           = nullptr;
+            entry_bar.duration     = 500;
+            entry_bar.easing_enum  = EASING_LINEAR;
+            entry_bar.subject      = &this->scrollBarAlpha;
+            entry_bar.tag          = tag_bar;
+            entry_bar.target_value = Application::getTheme()->scrollBarAlphaNormal;
+            entry_bar.tick         = [](void* userdata) {};
+            entry_bar.userdata     = nullptr;
 
-        menu_animation_push(&entry_bar);
+            menu_animation_push(&entry_bar);
+        }
     }
     else
     {

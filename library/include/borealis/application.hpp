@@ -144,6 +144,7 @@ class Application
 
     static View* getCurrentFocus();
 
+    static std::vector<View*>* getViewStack();
     static std::vector<View*>* getFocusStack();
 
     static std::string getTitle();

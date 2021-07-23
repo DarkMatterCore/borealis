@@ -116,6 +116,7 @@ class Label : public View
 
     void startTickerAnimation();
     void stopTickerAnimation();
+    void resetTickerAnimation(void);
 
     const std::string& getText();
 
@@ -159,11 +160,6 @@ class Label : public View
      * = custom or the regular font
      */
     int getFont(FontStash* stash);
-
-    /**
-     * Sets the ticker state to active (scrolling) or inactive (ellipsis)
-     */
-    void setTickerState(bool active);
 
     float getTextAnimation();
     void resetTextAnimation();

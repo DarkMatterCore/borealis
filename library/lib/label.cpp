@@ -140,13 +140,13 @@ void Label::layout(NVGcontext* vg, Style* style, FontStash* stash)
         unsigned diff = 0, textEllipsisWidth = 0;
 
         do {
-            diff += ellipsisWidth;
+            diff++;
 
-            this->textEllipsis = this->getUtf8SubString(this->text, 0, utf8_str_len * std::min(1.0F, static_cast<float>(this->oldWidth - diff) / static_cast<float>(this->textWidth)));
+            this->textEllipsis = this->getUtf8SubString(this->text, 0, (utf8_str_len - diff) * std::min(1.0F, static_cast<float>(this->oldWidth - ellipsisWidth) / static_cast<float>(this->textWidth)));
             this->textEllipsis += "…";
 
             textEllipsisWidth = std::ceil(nvgTextBounds(vg, 0, 0, this->textEllipsis.c_str(), nullptr, nullptr));
-        } while(this->oldWidth && textEllipsisWidth >= this->oldWidth);
+        } while(this->oldWidth && textEllipsisWidth > this->oldWidth);
     }
 
     nvgRestore(vg);
@@ -188,22 +188,6 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
         const char *str = NULL;
         bool use_ticker = false;
 
-        // Adjust horizontal alignment
-        if (this->horizontalAlign == NVG_ALIGN_RIGHT) {
-            x += boxWidth;
-        } else if (this->horizontalAlign == NVG_ALIGN_CENTER) {
-            x += boxWidth / 2;
-        }
-
-        // Adjust vertical alignment
-        if (ver_align == NVG_ALIGN_BOTTOM || ver_align == NVG_ALIGN_BASELINE) {
-            y += height;
-            boxY = y - this->boundingBoxHeight;
-        } else if (ver_align == NVG_ALIGN_MIDDLE) {
-            y += height / 2;
-            boxY = y - this->boundingBoxHeight / 2;
-        }
-
         // Select the string to display
         if (this->labelStyle != LabelStyle::FPS && this->textWidth > boxWidth) {
             if (this->textAnimation >= 1.0F && this->tickerActive) {
@@ -214,6 +198,24 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
             }
         } else {
             str = this->text.c_str();
+        }
+
+        // Adjust horizontal alignment
+        if (this->horizontalAlign == NVG_ALIGN_RIGHT) {
+            x += boxWidth;
+            if (use_ticker) x += this->textWidth + this->textTickerWidth - boxWidth;
+        } else if (this->horizontalAlign == NVG_ALIGN_CENTER) {
+            x += boxWidth / 2;
+            if (use_ticker) x += (this->textWidth + this->textTickerWidth - boxWidth) / 2;
+        }
+
+        // Adjust vertical alignment
+        if (ver_align == NVG_ALIGN_BOTTOM || ver_align == NVG_ALIGN_BASELINE) {
+            y += height;
+            boxY = y - this->boundingBoxHeight;
+        } else if (ver_align == NVG_ALIGN_MIDDLE) {
+            y += height / 2;
+            boxY = y - this->boundingBoxHeight / 2;
         }
 
         // Scissor area, if needed
@@ -233,8 +235,6 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
 
 void Label::startTickerAnimation()
 {
-    this->updateTextDimensions();
-
     this->tickerWaitTimerCtx.duration = 1500;
     this->tickerWaitTimerCtx.cb = [&](void *userdata) {
         menu_animation_ctx_tag tag = (uintptr_t) & this->tickerOffset;
@@ -266,6 +266,13 @@ void Label::stopTickerAnimation()
     menu_animation_kill_by_tag(&tag);
 
     this->tickerOffset = 0.0f;
+}
+
+void Label::resetTickerAnimation(void)
+{
+    if (!this->tickerActive) return;
+    this->stopTickerAnimation();
+    this->startTickerAnimation();
 }
 
 const std::string& Label::getText()
@@ -349,11 +356,6 @@ int Label::getFont(FontStash* stash)
         return this->customFont;
 
     return stash->regular;
-}
-
-void Label::setTickerState(bool active)
-{
-    this->tickerActive = active;
 }
 
 unsigned Label::getFontSize(LabelStyle labelStyle)
@@ -451,14 +453,14 @@ void Label::animate(LabelAnimation animation)
 
 void Label::onParentFocus()
 {
-    this->setTickerState(true);
+    this->tickerActive = true;
     this->startTickerAnimation();
 }
 
 void Label::onParentUnfocus()
 {
     this->stopTickerAnimation();
-    this->setTickerState(false);
+    this->tickerActive = false;
 }
 
 void Label::updateTextDimensions(bool invalidateParent)

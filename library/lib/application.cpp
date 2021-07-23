@@ -578,6 +578,11 @@ View* Application::getCurrentFocus()
     return Application::currentFocus;
 }
 
+std::vector<View*>* Application::getViewStack()
+{
+    return &(Application::viewStack);
+}
+
 std::vector<View*>* Application::getFocusStack()
 {
     return &(Application::focusStack);

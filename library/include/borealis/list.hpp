@@ -39,8 +39,6 @@ class ListItem : public View
 
     bool checked = false; // check mark on the right
 
-    unsigned textSize;
-
     bool drawTopSeparator = true;
 
     Label* labelView       = nullptr;
@@ -206,7 +204,7 @@ class List : public ScrollView
     ListContentView* layout;
 
   public:
-    List(size_t defaultFocus = 0);
+    List(size_t defaultFocus = 0, bool drawScrollBar = true);
     ~List();
 
     // Wrapped BoxLayout methods

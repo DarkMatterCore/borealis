@@ -45,7 +45,7 @@ Dropdown::Dropdown(std::string title, std::vector<std::string> values, ValueSele
 
     this->valuesCount = values.size();
 
-    this->list = new List(selected);
+    this->list = new List(selected, false);
     this->list->setParent(this);
     this->list->setMargins(1, 0, 1, 0);
 

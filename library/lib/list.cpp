@@ -113,7 +113,6 @@ ListItem::ListItem(std::string label, std::string description, std::string subLa
     Style* style = Application::getStyle();
 
     this->setHeight(subLabel != "" ? style->List.Item.heightWithSubLabel : style->List.Item.height);
-    this->setTextSize(style->Label.listItemFontSize);
 
     this->labelView = new Label(LabelStyle::LIST_ITEM, label, false);
     this->labelView->setParent(this);
@@ -136,9 +135,12 @@ ListItem::ListItem(std::string label, std::string description, std::string subLa
 
 void ListItem::setThumbnail(Image* image)
 {
-    if (this->thumbnailView)
+    if (this->thumbnailView) {
         delete this->thumbnailView;
-    if (image != NULL)
+        this->thumbnailView = nullptr;
+    }
+
+    if (image)
     {
         this->thumbnailView = image;
         this->thumbnailView->setParent(this);
@@ -152,7 +154,6 @@ void ListItem::setThumbnail(const std::string &imagePath)
         this->thumbnailView = new Image();
 
     this->thumbnailView->setImage(imagePath);
-
     this->thumbnailView->setParent(this);
     this->thumbnailView->setScaleType(ImageScaleType::FIT);
     this->invalidate();
@@ -164,7 +165,6 @@ void ListItem::setThumbnail(const unsigned char* buffer, size_t bufferSize)
         this->thumbnailView = new Image();
 
     this->thumbnailView->setImage(buffer, bufferSize);
-
     this->thumbnailView->setParent(this);
     this->thumbnailView->setScaleType(ImageScaleType::FIT);
     this->invalidate();
@@ -176,7 +176,6 @@ void ListItem::setThumbnailRGBA(const unsigned char* buffer, size_t width, size_
         this->thumbnailView = new Image();
 
     this->thumbnailView->setImageRGBA(buffer, width, height);
-
     this->thumbnailView->setParent(this);
     this->thumbnailView->setScaleType(ImageScaleType::FIT);
     this->invalidate();
@@ -199,7 +198,7 @@ void ListItem::setIndented(bool indented)
 
 void ListItem::setTextSize(unsigned textSize)
 {
-    this->textSize = textSize;
+    this->labelView->setFontSize(textSize);
 }
 
 void ListItem::setChecked(bool checked)
@@ -227,21 +226,76 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
     if (this->descriptionView)
         baseHeight -= this->descriptionView->getHeight() + style->List.Item.descriptionSpacing;
 
-    unsigned valueBoxWidth  = width / 3;
-    unsigned valueTextWidth = hasValue ? this->valueView->getTextWidth() : valueBoxWidth;
-    if (valueBoxWidth > valueTextWidth) valueBoxWidth = valueTextWidth;
+    unsigned leftPadding        = hasThumbnail ? this->thumbnailView->getWidth() + style->List.Item.thumbnailPadding * 2 : style->List.Item.padding;
 
-    unsigned leftPadding  = hasThumbnail ? this->thumbnailView->getWidth() + style->List.Item.thumbnailPadding * 2 : style->List.Item.padding;
-    unsigned rightPadding = (hasSubLabel || !hasValue) ? style->List.Item.padding : valueBoxWidth + style->List.Item.padding * 2;
+    unsigned itemAvailableWidth = this->width - leftPadding - style->List.Item.padding;
+
+    unsigned labelTextWidth     = this->labelView->getTextWidth();
+    unsigned labelBoxWidth      = 0;
+
+    unsigned subLabelTextWidth  = hasSubLabel ? this->subLabelView->getTextWidth() : 0;
+    unsigned subLabelBoxWidth   = 0;
+
+    unsigned valueTextWidth     = hasValue ? this->valueView->getTextWidth() : 0;
+    unsigned valueBoxWidth      = hasValue ? this->width / 3 : 0;
+
+    // Calculate text box widths
+    if (this->checked) {
+        // Skip sublabel and value calculations if we're dealing with a check mark
+        labelBoxWidth = itemAvailableWidth - (style->List.Item.selectRadius * 2) - style->List.Item.padding;
+    } else
+    if (hasValue) {
+        unsigned newItemAvailableWidth = itemAvailableWidth - style->List.Item.padding;
+
+        if (valueBoxWidth >= valueTextWidth)
+        {
+            // Steal horizontal space for the label / sublabel
+            newItemAvailableWidth -= valueTextWidth;
+            valueBoxWidth          = valueTextWidth;
+
+            if (hasSubLabel) {
+                labelBoxWidth    = itemAvailableWidth;
+                subLabelBoxWidth = newItemAvailableWidth;
+            } else {
+                labelBoxWidth    = newItemAvailableWidth;
+            }
+        } else {
+            // Steal horizontal space for the value (if possible)
+            newItemAvailableWidth -= valueBoxWidth;
+
+            if (hasSubLabel)
+            {
+                labelBoxWidth = itemAvailableWidth;
+
+                if (subLabelTextWidth < newItemAvailableWidth) {
+                    subLabelBoxWidth = subLabelTextWidth;
+                    valueBoxWidth    = itemAvailableWidth - subLabelBoxWidth - style->List.Item.padding;
+                } else {
+                    subLabelBoxWidth = newItemAvailableWidth;
+                }
+            } else {
+                if (labelTextWidth < newItemAvailableWidth) {
+                    labelBoxWidth = labelTextWidth;
+                    valueBoxWidth = itemAvailableWidth - labelBoxWidth - style->List.Item.padding;
+                } else {
+                    labelBoxWidth = newItemAvailableWidth;
+                }
+            }
+        }
+    } else {
+        // Use all the available item width for both label and sublabel
+        labelBoxWidth    = itemAvailableWidth;
+        subLabelBoxWidth = hasSubLabel ? itemAvailableWidth : 0;
+    }
 
     // Label
-    this->labelView->setBoundaries(x + leftPadding, y + (baseHeight / (hasSubLabel ? 3 : 2)), width - leftPadding - rightPadding, 0);
+    this->labelView->setBoundaries(this->x + leftPadding, this->y + (baseHeight / (hasSubLabel ? 3 : 2)), labelBoxWidth, 0);
     this->labelView->invalidate();
 
     // Value
     if (hasValue) {
-        unsigned valueX = x + width - style->List.Item.padding;
-        unsigned valueY = y + (hasSubLabel ? baseHeight - baseHeight / 3 : baseHeight / 2);
+        unsigned valueX = this->x + this->width - style->List.Item.padding;
+        unsigned valueY = this->y + (hasSubLabel ? baseHeight - baseHeight / 3 : baseHeight / 2);
 
         this->valueView->setBoundaries(valueX, valueY, valueBoxWidth, 0);
         this->valueView->setVerticalAlign(hasSubLabel ? NVG_ALIGN_TOP : NVG_ALIGN_MIDDLE);
@@ -255,8 +309,7 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
     // Sub Label
     if (hasSubLabel)
     {
-        rightPadding = hasValue ? valueBoxWidth + style->List.Item.padding * 2 : style->List.Item.padding;
-        this->subLabelView->setBoundaries(x + leftPadding, y + baseHeight - baseHeight / 3, width - leftPadding - rightPadding, 0);
+        this->subLabelView->setBoundaries(this->x + leftPadding, this->y + baseHeight - baseHeight / 3, subLabelBoxWidth, 0);
         this->subLabelView->invalidate();
     }
 
@@ -278,11 +331,11 @@ void ListItem::layout(NVGcontext* vg, Style* style, FontStash* stash)
     if (this->thumbnailView)
     {
         Style* style           = Application::getStyle();
-        unsigned thumbnailSize = height - style->List.Item.thumbnailPadding * 2;
+        unsigned thumbnailSize = this->height - style->List.Item.thumbnailPadding * 2;
 
         this->thumbnailView->setBoundaries(
-            x + style->List.Item.thumbnailPadding,
-            y + style->List.Item.thumbnailPadding,
+            this->x + style->List.Item.thumbnailPadding,
+            this->y + style->List.Item.thumbnailPadding,
             thumbnailSize,
             thumbnailSize);
         this->thumbnailView->invalidate();
@@ -317,9 +370,11 @@ void ListItem::setValue(std::string value, bool faint, bool animate)
     } else {
         this->oldValueView->setText(this->valueView->getText());
         this->oldValueView->setStyle(this->oldValueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE);
+        this->oldValueView->resetTickerAnimation();
 
         this->valueView->setText(value);
         this->valueView->setStyle(this->valueFaint ? LabelStyle::LIST_ITEM_VALUE_FAINT : LabelStyle::LIST_ITEM_VALUE);
+        this->valueView->resetTickerAnimation();
 
         if (animate && this->oldValueView->getText() != "")
         {
@@ -629,7 +684,7 @@ ValueSelectedEvent* SelectListItem::getValueSelectedEvent()
     return &this->valueEvent;
 }
 
-List::List(size_t defaultFocus)
+List::List(size_t defaultFocus, bool drawScrollBar) : ScrollView(drawScrollBar)
 {
     this->layout = new ListContentView(this, defaultFocus);
 

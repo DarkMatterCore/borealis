@@ -22,7 +22,6 @@ namespace brls
 {
 
 // TODO: horizontal scrolling, either in ScrollView or in a separate class (like Android has)
-// TODO: Scrollbar
 
 // A view that automatically scrolls vertically
 // when one of its children gains focus
@@ -38,6 +37,7 @@ class ScrollView : public View
 
     float scrollY = 0.0f; // from 0.0f to 1.0f, in % of content view height
 
+    bool drawScrollBar;
     float scrollBarAlpha = Application::getTheme()->scrollBarAlphaNormal;
 
     bool updateScrollingOnNextLayout = false;
@@ -51,6 +51,7 @@ class ScrollView : public View
     void scrollAnimationTick();
 
   public:
+    ScrollView(bool drawScrollBar = true) : View(), drawScrollBar(drawScrollBar) { }
     ~ScrollView();
 
     void draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx) override;
