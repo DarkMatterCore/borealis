@@ -148,8 +148,11 @@ NotificationManager::~NotificationManager()
 {
     for (size_t i = 0; i < BRLS_NOTIFICATIONS_MAX; i++)
     {
-        if (this->notifications[i])
+        if (this->notifications[i]) {
+            menu_timer_kill(&this->notifications[i]->timeoutTimer);
             delete this->notifications[i];
+            this->notifications[i] = nullptr;
+        }
     }
 }
 
