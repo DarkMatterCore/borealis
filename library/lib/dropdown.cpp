@@ -184,10 +184,10 @@ View* Dropdown::getDefaultFocus()
     return this->list->getDefaultFocus();
 }
 
-void Dropdown::open(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, int selected)
+void Dropdown::open(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, int selected, bool registerExit, bool registerFps)
 {
     Dropdown* dropdown = new Dropdown(title, values, cb, selected);
-    Application::pushView(dropdown);
+    Application::pushView(dropdown, ViewAnimation::FADE, registerExit, registerFps);
 }
 
 void Dropdown::willAppear(bool resetState)

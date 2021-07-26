@@ -69,7 +69,7 @@ class Dropdown : public View
     void willAppear(bool resetState = false) override;
     void willDisappear(bool resetState = false) override;
 
-    static void open(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, int selected = -1);
+    static void open(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, int selected = -1, bool registerExit = true, bool registerFps = true);
 
     bool isTranslucent() override
     {

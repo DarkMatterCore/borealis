@@ -129,22 +129,22 @@ View* PopupFrame::getDefaultFocus()
     return nullptr;
 }
 
-void PopupFrame::open(std::string title, unsigned char* imageBuffer, size_t imageBufferSize, AppletFrame* contentView, std::string subTitleLeft, std::string subTitleRight)
+void PopupFrame::open(std::string title, unsigned char* imageBuffer, size_t imageBufferSize, AppletFrame* contentView, std::string subTitleLeft, std::string subTitleRight, bool registerExit, bool registerFps)
 {
     PopupFrame* popupFrame = new PopupFrame(title, imageBuffer, imageBufferSize, contentView, subTitleLeft, subTitleRight);
-    Application::pushView(popupFrame);
+    Application::pushView(popupFrame, ViewAnimation::FADE, registerExit, registerFps);
 }
 
-void PopupFrame::open(std::string title, std::string imagePath, AppletFrame* contentView, std::string subTitleLeft, std::string subTitleRight)
+void PopupFrame::open(std::string title, std::string imagePath, AppletFrame* contentView, std::string subTitleLeft, std::string subTitleRight, bool registerExit, bool registerFps)
 {
     PopupFrame* popupFrame = new PopupFrame(title, imagePath, contentView, subTitleLeft, subTitleRight);
-    Application::pushView(popupFrame);
+    Application::pushView(popupFrame, ViewAnimation::FADE, registerExit, registerFps);
 }
 
-void PopupFrame::open(std::string title, AppletFrame* contentView, std::string subTitleLeft, std::string subTitleRight)
+void PopupFrame::open(std::string title, AppletFrame* contentView, std::string subTitleLeft, std::string subTitleRight, bool registerExit, bool registerFps)
 {
     PopupFrame* popupFrame = new PopupFrame(title, contentView, subTitleLeft, subTitleRight);
-    Application::pushView(popupFrame);
+    Application::pushView(popupFrame, ViewAnimation::FADE, registerExit, registerFps);
 }
 
 void PopupFrame::willAppear(bool resetState)

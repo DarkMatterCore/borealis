@@ -644,10 +644,12 @@ ListItemGroupSpacing::ListItemGroupSpacing(bool separator)
         this->setColor(theme->listItemSeparatorColor);
 }
 
-SelectListItem::SelectListItem(std::string label, std::vector<std::string> values, unsigned selectedValue, std::string description)
+SelectListItem::SelectListItem(std::string label, std::vector<std::string> values, unsigned selectedValue, std::string description, bool registerExit, bool registerFps)
     : ListItem(label, description)
     , values(values)
     , selectedValue(selectedValue)
+    , registerExit(registerExit)
+    , registerFps(registerFps)
 {
     this->setValue(values[selectedValue], false, false);
 
@@ -661,7 +663,7 @@ SelectListItem::SelectListItem(std::string label, std::vector<std::string> value
 
             this->valueEvent.fire(result);
         };
-        Dropdown::open(this->getLabel(), this->values, valueCallback, this->selectedValue);
+        Dropdown::open(this->getLabel(), this->values, valueCallback, this->selectedValue, this->registerExit, this->registerFps);
     });
 }
 

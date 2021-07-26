@@ -50,9 +50,9 @@ class PopupFrame : public View
     void willAppear(bool resetState = false) override;
     void willDisappear(bool resetState = false) override;
 
-    static void open(std::string title, unsigned char* imageBuffer, size_t imageBufferSize, AppletFrame* contentView, std::string subTitleLeft = "", std::string subTitleRight = "");
-    static void open(std::string title, std::string imagePath, AppletFrame* contentView, std::string subTitleLeft = "", std::string subTitleRight = "");
-    static void open(std::string title, AppletFrame* contentView, std::string subTitleLeft = "", std::string subTitleRight = "");
+    static void open(std::string title, unsigned char* imageBuffer, size_t imageBufferSize, AppletFrame* contentView, std::string subTitleLeft = "", std::string subTitleRight = "", bool registerExit = true, bool registerFps = true);
+    static void open(std::string title, std::string imagePath, AppletFrame* contentView, std::string subTitleLeft = "", std::string subTitleRight = "", bool registerExit = true, bool registerFps = true);
+    static void open(std::string title, AppletFrame* contentView, std::string subTitleLeft = "", std::string subTitleRight = "", bool registerExit = true, bool registerFps = true);
 
     bool isTranslucent() override
     {

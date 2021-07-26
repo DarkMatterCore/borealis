@@ -831,7 +831,7 @@ void Application::popView(ViewAnimation animation, std::function<void(void)> cb)
     }
 }
 
-void Application::pushView(View* view, ViewAnimation animation)
+void Application::pushView(View* view, ViewAnimation animation, bool registerExit, bool registerFps)
 {
     Application::blockInputs();
 
@@ -844,9 +844,11 @@ void Application::pushView(View* view, ViewAnimation animation)
     bool fadeOut = last && !last->isTranslucent() && !view->isTranslucent(); // play the fade out animation?
     bool wait    = animation == ViewAnimation::FADE; // wait for the old view animation to be done before showing the new one?
 
-    view->registerAction("brls/hints/exit"_i18n, Key::PLUS, [] { Application::quit(); return true; });
-    view->registerAction(
-        "FPS", Key::MINUS, [] { Application::toggleFramerateDisplay(); return true; }, true);
+    if (registerExit)
+        view->registerAction("brls/hints/exit"_i18n, Key::PLUS, [] { Application::quit(); return true; });
+
+    if (registerFps)
+        view->registerAction("FPS", Key::MINUS, [] { Application::toggleFramerateDisplay(); return true; }, true);
 
     // Fade out animation
     if (fadeOut)

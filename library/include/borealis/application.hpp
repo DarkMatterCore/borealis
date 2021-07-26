@@ -71,7 +71,7 @@ class Application
       *
       * The view will gain focus if applicable
       */
-    static void pushView(View* view, ViewAnimation animation = ViewAnimation::FADE);
+    static void pushView(View* view, ViewAnimation animation = ViewAnimation::FADE, bool registerExit = true, bool registerFps = true);
 
     /**
       * Pops the last pushed view from the stack

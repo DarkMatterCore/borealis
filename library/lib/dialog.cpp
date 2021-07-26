@@ -57,9 +57,9 @@ void Dialog::addButton(std::string label, GenericEvent::Callback cb)
     this->invalidate();
 }
 
-void Dialog::open()
+void Dialog::open(bool registerExit, bool registerFps)
 {
-    Application::pushView(this);
+    Application::pushView(this, ViewAnimation::FADE, registerExit, registerFps);
 
     if (this->buttons.size() == 0)
         Application::blockInputs();
