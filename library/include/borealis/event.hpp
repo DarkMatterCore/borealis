@@ -44,6 +44,7 @@ class Event
 
     Subscription subscribe(Callback cb);
     void unsubscribe(Subscription subscription);
+    void unsubscribeAll();
     bool fire(Ts... args);
 
   private:
@@ -61,6 +62,12 @@ template <typename... Ts>
 void Event<Ts...>::unsubscribe(Event<Ts...>::Subscription subscription)
 {
     this->callbacks.erase(subscription);
+}
+
+template <typename... Ts>
+void Event<Ts...>::unsubscribeAll()
+{
+    this->callbacks.clear();
 }
 
 template <typename... Ts>
