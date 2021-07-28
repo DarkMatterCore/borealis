@@ -54,6 +54,7 @@ class Dialog : public View
     bool cancelable = true;
 
   public:
+    Dialog();
     Dialog(std::string text);
     Dialog(View* contentView);
     ~Dialog();
@@ -62,6 +63,8 @@ class Dialog : public View
     void layout(NVGcontext* vg, Style* style, FontStash* stash) override;
     View* getDefaultFocus() override;
     virtual bool onCancel();
+
+    void setContentView(View* contentView);
 
     /**
      * Adds a button to this dialog, with a maximum of three
@@ -72,6 +75,8 @@ class Dialog : public View
      */
     void addButton(std::string label, GenericEvent::Callback cb);
 
+    void setButtonText(int index, std::string label);
+
     /**
      * A cancelable dialog is closed when
      * the user presses B (defaults to true)
@@ -80,6 +85,7 @@ class Dialog : public View
      * be cancelable
      */
     void setCancelable(bool cancelable);
+    bool getCancelable();
 
     void open(bool registerExit = true, bool registerFps = true);
     void close(std::function<void(void)> cb = []() {});

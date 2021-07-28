@@ -28,18 +28,28 @@ using namespace brls::i18n::literals;
 namespace brls
 {
 
-Dialog::Dialog(View* contentView)
-    : contentView(contentView)
+Dialog::Dialog()
 {
-    if (contentView)
-        contentView->setParent(this);
 
+}
+
+Dialog::Dialog(View* contentView)
+{
+    this->setContentView(contentView);
     this->registerAction("brls/hints/back"_i18n, Key::B, [this] { return this->onCancel(); });
 }
 
 Dialog::Dialog(std::string text)
-    : Dialog(new Label(LabelStyle::DIALOG, text, true))
 {
+    this->setContentView(new Label(LabelStyle::DIALOG, text, true));
+}
+
+void Dialog::setContentView(View* contentView)
+{
+    if (contentView) {
+        this->contentView = contentView;
+        this->contentView->setParent(this);
+    }
 }
 
 void Dialog::addButton(std::string label, GenericEvent::Callback cb)
@@ -55,6 +65,40 @@ void Dialog::addButton(std::string label, GenericEvent::Callback cb)
 
     this->rebuildButtons();
     this->invalidate();
+}
+
+void Dialog::setButtonText(int index, std::string label)
+{
+    Button *button = nullptr;
+    size_t button_count = this->buttons.size();
+
+    if (index < 0 || index >= static_cast<int>(button_count) || label == "")
+        return;
+
+    switch(button_count)
+    {
+        case 1:
+            if (index == 0) button = static_cast<Button*>(this->verticalButtonsLayout->getChild(index));
+            break;
+        case 2:
+            if (index <= 1) button = static_cast<Button*>(this->horizontalButtonsLayout->getChild(index));
+            break;
+        case 3:
+            if (index == 0) {
+                button = static_cast<Button*>(this->verticalButtonsLayout->getChild(index));
+            } else if (index <= 2) {
+                button = static_cast<Button*>(this->horizontalButtonsLayout->getChild(index));
+            }
+            break;
+        default:
+            break;
+    }
+
+    if (button) {
+        this->buttons[index]->label = label;
+        button->setLabel(label);
+        this->invalidate();
+    }
 }
 
 void Dialog::open(bool registerExit, bool registerFps)
@@ -77,6 +121,11 @@ void Dialog::close(std::function<void(void)> cb)
 void Dialog::setCancelable(bool cancelable)
 {
     this->cancelable = cancelable;
+}
+
+bool Dialog::getCancelable()
+{
+    return this->cancelable;
 }
 
 void Dialog::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx)
