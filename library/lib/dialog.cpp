@@ -128,6 +128,18 @@ bool Dialog::getCancelable()
     return this->cancelable;
 }
 
+void Dialog::willAppear(bool resetState)
+{
+    if (this->contentView)
+        this->contentView->willAppear(resetState);
+}
+
+void Dialog::willDisappear(bool resetState)
+{
+    if (this->contentView)
+        this->contentView->willDisappear(resetState);
+}
+
 void Dialog::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx)
 {
     // Backdrop

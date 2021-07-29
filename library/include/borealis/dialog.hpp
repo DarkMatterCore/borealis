@@ -59,6 +59,9 @@ class Dialog : public View
     Dialog(View* contentView);
     ~Dialog();
 
+    void willAppear(bool resetState = false) override;
+    void willDisappear(bool resetState = false) override;
+
     void draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx) override;
     void layout(NVGcontext* vg, Style* style, FontStash* stash) override;
     View* getDefaultFocus() override;

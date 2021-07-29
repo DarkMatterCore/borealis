@@ -60,11 +60,13 @@ void ProgressSpinner::layout(NVGcontext* vg, Style* style, FontStash* stash)
 void ProgressSpinner::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx)
 {
     NVGcolor barColor = a(ctx->theme->spinnerBarColor);
+    float barColorAlpha = barColor.a;
 
     // Each bar of the spinner
     for (int i = 0 + animationValue; i < 8 + animationValue; i++)
     {
-        barColor.a = fmax((i - animationValue) / 8.0f, a(ctx->theme->spinnerBarColor).a);
+        float curBarAlpha = (i - animationValue) / 8.0f;
+        barColor.a = this->getAlpha() >= 1.0f ? fmax(curBarAlpha, barColorAlpha) : fmin(curBarAlpha, barColorAlpha);
         nvgSave(vg);
         nvgTranslate(vg, x + width / 2, y + height / 2);
         nvgRotate(vg, nvgDegToRad(i * 45)); // Internal angle of octagon
