@@ -770,6 +770,46 @@ void Application::giveFocus(View* view)
     }
 }
 
+void Application::swapView(View *view, ViewAnimation animation, bool registerExit, bool registerFps)
+{
+    if (!Application::viewStack.size()) {
+        // Just push the provided view and return
+        Application::pushView(view, animation, registerExit, registerFps);
+        return;
+    }
+
+    Application::blockInputs();
+
+    View* last = Application::viewStack[Application::viewStack.size() - 1];
+    last->willDisappear(true);
+    last->setForceTranslucent(true);
+
+    bool wait = animation == ViewAnimation::FADE; // wait for the current view animation to be done before showing the new one?
+
+    // Pop current view from the stack
+    Application::viewStack.pop_back();
+
+    // Remove current focus
+    Application::currentFocus = nullptr;
+
+    // Hide animation
+    last->hide([last, wait, view, animation, registerExit, registerFps]() {
+        // Delete current view
+        delete last;
+
+        // Push the new view once the current one
+        // has ended its animation
+        if (wait)
+            Application::pushView(view, animation, registerExit, registerFps);
+
+        Application::unblockInputs();
+    }, true, animation);
+
+    // Push the new view immediately
+    if (!wait)
+        Application::pushView(view, animation, registerExit, registerFps);
+}
+
 void Application::popView(ViewAnimation animation, std::function<void(void)> cb)
 {
     if (Application::viewStack.size() <= 1) // never pop the root view
@@ -779,7 +819,6 @@ void Application::popView(ViewAnimation animation, std::function<void(void)> cb)
 
     View* last = Application::viewStack[Application::viewStack.size() - 1];
     last->willDisappear(true);
-
     last->setForceTranslucent(true);
 
     bool wait = animation == ViewAnimation::FADE; // wait for the new view animation to be done before showing the old one?
@@ -808,8 +847,7 @@ void Application::popView(ViewAnimation animation, std::function<void(void)> cb)
         }
 
         Application::unblockInputs();
-    },
-        true, animation);
+    }, true, animation);
 
     // Animate the old view immediately
     if (!wait && Application::viewStack.size() > 1)

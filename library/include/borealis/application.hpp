@@ -77,8 +77,13 @@ class Application
       * Pops the last pushed view from the stack
       * and gives focus back where it was before
       */
-    static void popView(
-        ViewAnimation animation = ViewAnimation::FADE, std::function<void(void)> cb = []() {});
+    static void popView(ViewAnimation animation = ViewAnimation::FADE, std::function<void(void)> cb = [](){});
+
+    /**
+      * Pops the last pushed view from the stack
+      * and immediately replaces it with the new one
+      */
+    static void swapView(View *view, ViewAnimation animation = ViewAnimation::FADE, bool registerExit = true, bool registerFps = true);
 
     /**
      * Gives the focus to the given view
