@@ -975,7 +975,7 @@ int Application::findFont(const char* fontName)
 
 void Application::crash(std::string text)
 {
-    CrashFrame* crashFrame = new CrashFrame(text);
+    CrashFrame* crashFrame = new CrashFrame(text, [](View* view) { Application::quit(); });
     Application::pushView(crashFrame);
 }
 

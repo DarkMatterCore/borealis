@@ -29,7 +29,7 @@ using namespace brls::i18n::literals;
 namespace brls
 {
 
-CrashFrame::CrashFrame(std::string text)
+CrashFrame::CrashFrame(std::string text, std::function<void(View*)> cb)
 {
     // Label
     this->label = new Label(LabelStyle::CRASH, text, true);
@@ -40,7 +40,7 @@ CrashFrame::CrashFrame(std::string text)
     this->button = (new Button(ButtonStyle::CRASH))->setLabel("brls/crash_frame/button"_i18n);
     this->button->setParent(this);
     this->button->alpha = 0.0f;
-    this->button->getClickEvent()->subscribe([](View* view) { Application::quit(); });
+    this->button->getClickEvent()->subscribe(cb);
     this->button->overrideThemeVariant(Application::getThemeVariantsWrapper()->getDarkTheme());
 
     // Hint
