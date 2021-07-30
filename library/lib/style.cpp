@@ -122,7 +122,7 @@ HorizonStyle::HorizonStyle()
     };
 
     this->CrashFrame = {
-        .labelWidth     = 0.60f,
+        .labelWidth     = 0.90f,
         .boxStrokeWidth = 5,
         .boxSize        = 64,
         .boxSpacing     = 90,
