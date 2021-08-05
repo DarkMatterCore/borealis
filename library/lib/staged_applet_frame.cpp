@@ -26,8 +26,8 @@
 namespace brls
 {
 
-StagedAppletFrame::StagedAppletFrame()
-    : AppletFrame(true, true)
+StagedAppletFrame::StagedAppletFrame(bool drawCircles)
+    : AppletFrame(true, true), drawCircles(drawCircles)
 {
 }
 
@@ -71,7 +71,7 @@ void StagedAppletFrame::draw(NVGcontext* vg, int x, int y, unsigned width, unsig
 {
     AppletFrame::draw(vg, x, y, width, height, style, ctx);
 
-    if (stageViews.empty())
+    if (stageViews.empty() || !drawCircles)
         return;
 
     for (size_t i = 0; i < stageViews.size(); i++)

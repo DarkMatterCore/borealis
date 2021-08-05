@@ -31,7 +31,7 @@ namespace brls
 class StagedAppletFrame : public AppletFrame
 {
   public:
-    StagedAppletFrame();
+    StagedAppletFrame(bool drawCircles = true);
     ~StagedAppletFrame();
 
     void draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx) override;
@@ -47,6 +47,7 @@ class StagedAppletFrame : public AppletFrame
   private:
     size_t currentStage = 0;
     std::vector<View*> stageViews;
+    bool drawCircles;
 
     void enterStage(int index, bool requestFocus);
 };
