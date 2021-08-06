@@ -69,9 +69,10 @@ bool actionsSortFunc(Action a, Action b)
     return false;
 }
 
-void Hint::rebuildHints()
+void Hint::rebuildHints(bool force)
 {
     // Check if the focused element is still a child of the same parent as the hint view's
+    if (!force)
     {
         View* focusParent    = Application::getCurrentFocus();
         View* hintBaseParent = this;
@@ -99,6 +100,7 @@ void Hint::rebuildHints()
 
     std::set<Key> addedKeys; // we only ever want one action per key
     View* focusParent = Application::getCurrentFocus();
+    if (!focusParent) focusParent = this->getParent();
 
     // Iterate over the view tree to find all the actions to display
     std::vector<Action> actions;

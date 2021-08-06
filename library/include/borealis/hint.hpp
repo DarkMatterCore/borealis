@@ -45,11 +45,11 @@ class Hint : public BoxLayout
 
     static std::string getKeyIcon(Key key);
 
-    void rebuildHints();
-
   public:
     Hint(bool animate = true);
     ~Hint();
+
+    void rebuildHints(bool force = false);
 
     void willAppear(bool resetState = false) override;
     void willDisappear(bool resetState = false) override;

@@ -83,6 +83,8 @@ class AppletFrame : public View
     bool hasContentView();
     void setHeaderStyle(HeaderStyle headerStyle);
 
+    void rebuildHints();
+
     void setAnimateHint(bool animate)
     {
         this->hint->setAnimate(animate);

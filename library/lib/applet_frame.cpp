@@ -374,6 +374,11 @@ void AppletFrame::setHeaderStyle(HeaderStyle headerStyle)
     this->invalidate();
 }
 
+void AppletFrame::rebuildHints()
+{
+    this->hint->rebuildHints(true);
+}
+
 AppletFrame::~AppletFrame()
 {
     if (this->title)
