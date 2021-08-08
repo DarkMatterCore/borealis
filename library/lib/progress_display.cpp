@@ -53,26 +53,18 @@ void ProgressDisplay::setProgress(int current, int max)
 
 void ProgressDisplay::layout(NVGcontext* vg, Style* style, FontStash* stash)
 {
-    if (this->label)
-    {
-        this->label->setWidth(style->ProgressDisplay.percentageLabelWidth);
-        this->label->invalidate(true);
+    if (this->label) {
         this->label->setBoundaries(
-            this->x + this->width - this->label->getWidth() / 2,
-            this->y + this->height / 2 - this->label->getHeight() / 2,
-            this->label->getWidth(),
-            this->label->getHeight());
+            this->x + this->width - style->ProgressDisplay.percentageLabelWidth,
+            this->y + this->height / 2,
+            style->ProgressDisplay.percentageLabelWidth,
+            0);
+        this->label->invalidate();
     }
 
-    if (this->spinner)
-    {
-        this->spinner->setWidth(this->height);
-        this->spinner->setHeight(this->height);
-        this->spinner->setBoundaries(
-            this->x,
-            this->y,
-            this->spinner->getWidth(),
-            this->spinner->getHeight());
+    if (this->spinner) {
+        this->spinner->setBoundaries(this->x, this->y, this->height, this->height);
+        this->spinner->invalidate();
     }
 }
 
@@ -83,16 +75,17 @@ void ProgressDisplay::draw(NVGcontext* vg, int x, int y, unsigned width, unsigne
 
     if (this->label)
     {
-        progressBarWidth -= this->label->getWidth();
+        // 1.30 accounts for the extra width of the curve on sides of progress bar
         this->label->frame(ctx);
+        progressBarWidth -= style->ProgressDisplay.percentageLabelWidth * 1.30f;
     }
 
     if (this->spinner)
     {
         // 1.25 accounts for the extra width of the curve on sides of progress bar
+        this->spinner->frame(ctx);
         progressBarWidth -= this->spinner->getWidth() * 1.25f;
         progressBarX += this->spinner->getWidth() * 1.25f;
-        this->spinner->frame(ctx);
     }
 
     nvgBeginPath(vg);

@@ -108,21 +108,8 @@ void View::frame(FrameContext* ctx)
             this->drawHighlight(ctx->vg, ctx->theme, this->highlightAlpha, style, false);
 
         // Draw click animation
-        if (this->clickAnimationAlpha > 0.0f)
-        {
-            unsigned insetTop, insetRight, insetBottom, insetLeft;
-            this->getHighlightInsets(&insetTop, &insetRight, &insetBottom, &insetLeft);
-
-            unsigned x      = this->x - insetLeft;
-            unsigned y      = this->y - insetTop;
-            unsigned width  = this->width + insetLeft + insetRight;
-            unsigned height = this->height + insetTop + insetBottom;
-
-            nvgFillColor(ctx->vg, RGBAf(ctx->theme->highlightColor1.r, ctx->theme->highlightColor1.g, ctx->theme->highlightColor1.b, this->clickAnimationAlpha));
-            nvgBeginPath(ctx->vg);
-            nvgRect(ctx->vg, x, y, width, height);
-            nvgFill(ctx->vg);
-        }
+        if (this->clickAnimationAlpha > 0.0f && this->isHighlightBackgroundEnabled())
+            this->drawClickAnimation(ctx->vg, ctx->theme, this->clickAnimationAlpha);
 
         //Reset clipping
         if (this->collapseState < 1.0f)
@@ -334,6 +321,22 @@ void View::drawHighlight(NVGcontext* vg, Theme* theme, float alpha, Style* style
     }
 
     nvgRestore(vg);
+}
+
+void View::drawClickAnimation(NVGcontext* vg, Theme* theme, float alpha)
+{
+    unsigned insetTop, insetRight, insetBottom, insetLeft;
+    this->getHighlightInsets(&insetTop, &insetRight, &insetBottom, &insetLeft);
+
+    unsigned x      = this->x - insetLeft;
+    unsigned y      = this->y - insetTop;
+    unsigned width  = this->width + insetLeft + insetRight;
+    unsigned height = this->height + insetTop + insetBottom;
+
+    nvgFillColor(vg, RGBAf(theme->highlightColor1.r, theme->highlightColor1.g, theme->highlightColor1.b, alpha));
+    nvgBeginPath(vg);
+    nvgRect(vg, x, y, width, height);
+    nvgFill(vg);
 }
 
 void View::setBackground(ViewBackground background)

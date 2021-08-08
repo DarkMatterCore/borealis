@@ -84,6 +84,7 @@ class View
 
     void drawBackground(NVGcontext* vg, FrameContext* ctx, Style* style);
     void drawHighlight(NVGcontext* vg, Theme* theme, float alpha, Style* style, bool background);
+    void drawClickAnimation(NVGcontext* vg, Theme* theme, float alpha);
 
     float highlightAlpha = 0.0f;
     float clickAnimationAlpha = 0.0f;
