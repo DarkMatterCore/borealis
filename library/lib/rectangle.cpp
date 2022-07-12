@@ -17,7 +17,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <borealis/logger.hpp>
 #include <borealis/rectangle.hpp>
 
 namespace brls

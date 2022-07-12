@@ -17,7 +17,6 @@
 */
 
 #include <borealis/application.hpp>
-#include <borealis/logger.hpp>
 #include <borealis/notification_manager.hpp>
 #include <cstring>
 
@@ -72,12 +71,12 @@ void NotificationManager::notify(std::string text)
 
     if (!found)
     {
-        brls::Logger::warning("Discarding notification \"{}\"", text);
+        LOG_MSG_WARNING("Discarding notification \"%s\"", text.c_str());
         return;
     }
 
     // Create the notification
-    brls::Logger::debug("Showing notification \"{}\"", text);
+    LOG_MSG_DEBUG("Showing notification \"%s\"", text.c_str());
 
     Notification* notification = new Notification(text);
     notification->setParent(this);

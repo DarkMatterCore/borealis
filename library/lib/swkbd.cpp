@@ -17,13 +17,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <borealis/logger.hpp>
 #include <borealis/swkbd.hpp>
 #include <cstring>
 #include <iostream>
 
 #ifdef __SWITCH__
 #include <switch.h>
+#include <nxdt_log.h>
 #endif
 
 namespace brls
@@ -160,7 +160,7 @@ bool Swkbd::openForNumber(std::function<void(int)> f, std::string headerText, st
     }
     catch (const std::exception& e)
     {
-        Logger::error("Could not parse input, did you enter a valid integer?");
+        LOG_MSG_ERROR("Could not parse input, did you enter a valid integer?");
         return false;
     }
 #endif

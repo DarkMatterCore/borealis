@@ -90,25 +90,25 @@ static void windowFramebufferSizeCallback(GLFWwindow* window, int width, int hei
 
     Application::resizeNotificationManager();
 
-    Logger::info("Window size changed to {}x{}", width, height);
-    Logger::info("New scale factor is {}", Application::windowScale);
+    LOG_MSG_INFO("Window size changed to %dx%d", width, height);
+    LOG_MSG_INFO("New scale factor is %f", Application::windowScale);
 }
 
 static void joystickCallback(int jid, int event)
 {
     if (event == GLFW_CONNECTED)
     {
-        Logger::info("Joystick {} connected", jid);
+        LOG_MSG_INFO("Joystick %d connected", jid);
         if (glfwJoystickIsGamepad(jid))
-            Logger::info("Joystick {} is gamepad: \"{}\"", jid, glfwGetGamepadName(jid));
+            LOG_MSG_INFO("Joystick %d is gamepad: \"%s\"", jid, glfwGetGamepadName(jid));
     }
     else if (event == GLFW_DISCONNECTED)
-        Logger::info("Joystick {} disconnected", jid);
+        LOG_MSG_INFO("Joystick %d disconnected", jid);
 }
 
 static void errorCallback(int errorCode, const char* description)
 {
-    Logger::error("[GLFW:{}] {}", errorCode, description);
+    LOG_MSG_ERROR("[GLFW:%d] %s", errorCode, description);
 }
 
 static void windowKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -170,7 +170,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     glfwInitHint(GLFW_JOYSTICK_HAT_BUTTONS, GLFW_FALSE);
     if (!glfwInit())
     {
-        Logger::error("Failed to initialize glfw");
+        LOG_MSG_ERROR("Failed to initialize glfw");
         return false;
     }
 
@@ -192,7 +192,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     Application::window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title.c_str(), nullptr, nullptr);
     if (!window)
     {
-        Logger::error("glfw: failed to create window");
+        LOG_MSG_ERROR("glfw: failed to create window");
         glfwTerminate();
         return false;
     }
@@ -208,14 +208,14 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
     glfwSwapInterval(1);
 
-    Logger::info("GL Vendor: {}", glGetString(GL_VENDOR));
-    Logger::info("GL Renderer: {}", glGetString(GL_RENDERER));
-    Logger::info("GL Version: {}", glGetString(GL_VERSION));
+    LOG_MSG_INFO("GL Vendor: %s", (const char*)glGetString(GL_VENDOR));
+    LOG_MSG_INFO("GL Renderer: %s", (const char*)glGetString(GL_RENDERER));
+    LOG_MSG_INFO("GL Version: %S", (const char*)glGetString(GL_VERSION));
 
     if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1))
     {
         GLFWgamepadstate state;
-        Logger::info("Gamepad detected: {}", glfwGetGamepadName(GLFW_JOYSTICK_1));
+        LOG_MSG_INFO("Gamepad detected: %s", glfwGetGamepadName(GLFW_JOYSTICK_1));
         glfwGetGamepadState(GLFW_JOYSTICK_1, &state);
     }
 
@@ -223,7 +223,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     Application::vg = nvgCreateGL3(NVG_STENCIL_STROKES | NVG_ANTIALIAS);
     if (!vg)
     {
-        Logger::error("Unable to init nanovg");
+        LOG_MSG_ERROR("Unable to init nanovg");
         glfwTerminate();
         return false;
     }
@@ -239,14 +239,14 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         // Standard font
         if (bfttfGetFontByType(&font, BfttfFontType_Standard))
         {
-            Logger::info("Using Switch shared font");
+            LOG_MSG_INFO("Using Switch shared font");
             Application::fontStash.regular = Application::loadFontFromMemory("regular", font.address, font.size, false);
         }
 
         // Korean font
         if (bfttfGetFontByType(&font, BfttfFontType_Korean))
         {
-            Logger::info("Adding Switch shared Korean font");
+            LOG_MSG_INFO("Adding Switch shared Korean font");
             Application::fontStash.korean = Application::loadFontFromMemory("korean", font.address, font.size, false);
             nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.korean);
         }
@@ -254,7 +254,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         // Simplified Chinese font
         if (bfttfGetFontByType(&font, BfttfFontType_ChineseSimplified))
         {
-            Logger::info("Adding Switch shared Simplified Chinese font");
+            LOG_MSG_INFO("Adding Switch shared Simplified Chinese font");
             Application::fontStash.schinese = Application::loadFontFromMemory("schinese", font.address, font.size, false);
             nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.schinese);
         }
@@ -262,7 +262,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         // Extended Simplified Chinese font
         if (bfttfGetFontByType(&font, BfttfFontType_ExtChineseSimplified))
         {
-            Logger::info("Adding Switch shared Extended Simplified Chinese font");
+            LOG_MSG_INFO("Adding Switch shared Extended Simplified Chinese font");
             Application::fontStash.schineseext = Application::loadFontFromMemory("schineseext", font.address, font.size, false);
             nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.schineseext);
         }
@@ -270,7 +270,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         // Traditional Chinese font
         if (bfttfGetFontByType(&font, BfttfFontType_ChineseTraditional))
         {
-            Logger::info("Adding Switch shared Traditional Chinese font");
+            LOG_MSG_INFO("Adding Switch shared Traditional Chinese font");
             Application::fontStash.tchinese = Application::loadFontFromMemory("tchinese", font.address, font.size, false);
             nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.tchinese);
         }
@@ -278,7 +278,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         // Extented font
         if (bfttfGetFontByType(&font, BfttfFontType_NintendoExt))
         {
-            Logger::info("Using Switch shared symbols font");
+            LOG_MSG_INFO("Using Switch shared symbols font");
             Application::fontStash.sharedSymbols = Application::loadFontFromMemory("sharedSymbols", font.address, font.size, false);
         }
     }
@@ -290,7 +290,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
         Application::fontStash.regular = Application::loadFont("regular", BOREALIS_ASSET("inter/Inter-Switch.ttf"));
 
     if (Application::fontStash.regular == -1)
-        brls::Logger::warning("Couldn't load regular font, no text will be displayed!");
+        LOG_MSG_WARNING("Couldn't load regular font, no text will be displayed!");
 
     if (access(BOREALIS_ASSET("Wingdings.ttf"), F_OK) != -1)
         Application::fontStash.sharedSymbols = Application::loadFont("sharedSymbols", BOREALIS_ASSET("Wingdings.ttf"));
@@ -299,12 +299,12 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     // Set symbols font as fallback
     if (Application::fontStash.sharedSymbols)
     {
-        Logger::info("Using shared symbols font");
+        LOG_MSG_INFO("Using shared symbols font");
         nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.sharedSymbols);
     }
     else
     {
-        Logger::warning("Shared symbols font not found");
+        LOG_MSG_WARNING("Shared symbols font not found");
     }
 
     // Material font
@@ -314,12 +314,12 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
     // Set Material as fallback
     if (Application::fontStash.material)
     {
-        Logger::info("Using Material font");
+        LOG_MSG_INFO("Using Material font");
         nvgAddFallbackFontId(Application::vg, Application::fontStash.regular, Application::fontStash.material);
     }
     else
     {
-        Logger::warning("Material font not found");
+        LOG_MSG_WARNING("Material font not found");
     }
 
     // Load theme
@@ -707,13 +707,13 @@ void Application::setDisplayFramerate(bool enabled)
 {
     if (!Application::framerateCounter && enabled)
     {
-        Logger::debug("Enabling framerate counter");
+        LOG_MSG_DEBUG("Enabling framerate counter");
         Application::framerateCounter = new FramerateCounter();
         Application::resizeFramerateCounter();
     }
     else if (Application::framerateCounter && !enabled)
     {
-        Logger::debug("Disabling framerate counter");
+        LOG_MSG_DEBUG("Disabling framerate counter");
         delete Application::framerateCounter;
         Application::framerateCounter = nullptr;
     }
@@ -765,7 +765,7 @@ void Application::giveFocus(View* view)
         if (newFocus)
         {
             newFocus->onFocusGained();
-            Logger::debug("Giving focus to {}", newFocus->describe());
+            LOG_MSG_DEBUG("Giving focus to %s", newFocus->describe().c_str());
         }
     }
 }
@@ -862,7 +862,7 @@ void Application::popView(ViewAnimation animation, std::function<void(void)> cb)
     {
         View* newFocus = Application::focusStack[Application::focusStack.size() - 1];
 
-        Logger::debug("Giving focus to {}, and removing it from the focus stack", newFocus->describe());
+        LOG_MSG_DEBUG("Giving focus to %s, and removing it from the focus stack", newFocus->describe().c_str());
 
         Application::giveFocus(newFocus);
         Application::focusStack.pop_back();
@@ -924,7 +924,7 @@ void Application::pushView(View* view, ViewAnimation animation, bool registerExi
     // Focus
     if (Application::viewStack.size() > 0 && Application::currentFocus != nullptr)
     {
-        Logger::debug("Pushing {} to the focus stack", Application::currentFocus->describe());
+        LOG_MSG_DEBUG("Pushing %s to the focus stack", Application::currentFocus->describe().c_str());
         Application::focusStack.push_back(Application::currentFocus);
     }
 
@@ -939,7 +939,7 @@ void Application::pushView(View* view, ViewAnimation animation, bool registerExi
 
 void Application::onWindowSizeChanged()
 {
-    Logger::debug("Layout triggered");
+    LOG_MSG_DEBUG("Layout triggered");
 
     for (View* view : Application::viewStack)
     {
@@ -1092,7 +1092,7 @@ void Application::setMaximumFPS(unsigned fps)
         Application::frameTime = 1000 / (float)fps;
     }
 
-    Logger::info("Maximum FPS set to {} - using a frame time of {:.2f} ms", fps, Application::frameTime);
+    LOG_MSG_INFO("Maximum FPS set to %u - using a frame time of %.2f ms", fps, Application::frameTime);
 }
 
 std::string Application::getTitle()

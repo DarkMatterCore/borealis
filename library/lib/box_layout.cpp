@@ -24,7 +24,6 @@
 #include <borealis/animations.hpp>
 #include <borealis/application.hpp>
 #include <borealis/box_layout.hpp>
-#include <borealis/logger.hpp>
 #include <iterator>
 
 namespace brls

@@ -24,6 +24,11 @@
 #endif
 #define BOREALIS_ASSET(_str) BOREALIS_RESOURCES _str
 
+#ifdef __SWITCH__
+#include <switch.h>
+#include <nxdt_log.h>
+#endif
+
 // Library
 #include <borealis/absolute_layout.hpp>
 #include <borealis/animations.hpp>
@@ -42,7 +47,6 @@
 #include <borealis/label.hpp>
 #include <borealis/layer_view.hpp>
 #include <borealis/list.hpp>
-#include <borealis/logger.hpp>
 #include <borealis/material_icon.hpp>
 #include <borealis/notification_manager.hpp>
 #include <borealis/popup_frame.hpp>

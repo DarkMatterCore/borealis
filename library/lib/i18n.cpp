@@ -46,12 +46,12 @@ static void loadLocale(std::string locale, nlohmann::json* target)
 
     if (!std::filesystem::exists(localePath))
     {
-        brls::Logger::error("Cannot load locale {}: directory {} doesn't exist", locale, localePath);
+        LOG_MSG_ERROR("Cannot load locale \"%s\": directory \"%s\" doesn't exist", locale.c_str(), localePath.c_str());
         return;
     }
     else if (!std::filesystem::is_directory(localePath))
     {
-        brls::Logger::error("Cannot load locale {}: {} isn't a directory", locale, localePath);
+        LOG_MSG_ERROR("Cannot load locale \"%s\": \"%s\" isn't a directory", locale.c_str(), localePath.c_str());
         return;
     }
 
@@ -79,7 +79,7 @@ static void loadLocale(std::string locale, nlohmann::json* target)
         }
         catch (const std::exception& e)
         {
-            brls::Logger::error("Error while loading \"{}\": {}", path, e.what());
+            LOG_MSG_ERROR("Error while loading \"%s\": %s", path.c_str(), e.what());
         }
 
         jsonStream.close();
@@ -102,7 +102,7 @@ std::string getCurrentLocale()
     }
     else
     {
-        brls::Logger::error("Unable to get system language (error 0x{0:x}), using the default one: {1}", res, DEFAULT_LOCALE);
+        LOG_MSG_ERROR("Unable to get system language (error 0x%X), using the default one: %s", res, DEFAULT_LOCALE);
     }
 #endif
     return DEFAULT_LOCALE;
@@ -129,7 +129,7 @@ namespace internal
         }
         catch (const std::exception& e)
         {
-            brls::Logger::error("Error while getting string \"{}\": {}", stringName, e.what());
+            LOG_MSG_ERROR("Error while getting string \"%s\": %s", stringName.c_str(), e.what());
             return stringName;
         }
 

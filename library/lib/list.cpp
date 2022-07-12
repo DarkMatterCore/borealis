@@ -25,7 +25,6 @@
 #include <borealis/header.hpp>
 #include <borealis/i18n.hpp>
 #include <borealis/list.hpp>
-#include <borealis/logger.hpp>
 #include <borealis/swkbd.hpp>
 #include <borealis/table.hpp>
 

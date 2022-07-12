@@ -23,12 +23,16 @@
 #include <GLFW/glfw3.h>
 #include <nanovg/nanovg.h>
 
+#ifdef __SWITCH__
+#include <switch.h>
+#include <nxdt_log.h>
+#endif
+
 #include <borealis/animations.hpp>
 #include <borealis/background.hpp>
 #include <borealis/frame_context.hpp>
 #include <borealis/hint.hpp>
 #include <borealis/label.hpp>
-#include <borealis/logger.hpp>
 #include <borealis/notification_manager.hpp>
 #include <borealis/style.hpp>
 #include <borealis/task_manager.hpp>

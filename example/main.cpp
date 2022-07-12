@@ -44,12 +44,10 @@ std::vector<std::string> NOTIFICATIONS = {
 int main(int argc, char* argv[])
 {
     // Init the app
-    brls::Logger::setLogLevel(brls::LogLevel::DEBUG);
-
     i18n::loadTranslations();
     if (!brls::Application::init("main/name"_i18n))
     {
-        brls::Logger::error("Unable to init Borealis application");
+        LOG_MSG_ERROR("Unable to init Borealis application");
         return EXIT_FAILURE;
     }
 

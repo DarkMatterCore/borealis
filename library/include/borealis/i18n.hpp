@@ -19,8 +19,12 @@
 #pragma once
 
 #include <fmt/core.h>
-
 #include <string>
+
+#ifdef __SWITCH__
+#include <switch.h>
+#include <nxdt_log.h>
+#endif
 
 namespace brls::i18n
 {
@@ -47,7 +51,7 @@ std::string getStr(std::string stringName, Args&&... args)
     }
     catch (const std::exception& e)
     {
-        Logger::error("Invalid format \"{}\" from string \"{}\": {}", rawStr, stringName, e.what());
+        LOG_MSG_ERROR("Invalid format \"%s\" from string \"%s\": %s", rawStr.c_str(), stringName.c_str(), e.what());
         return stringName;
     }
 }

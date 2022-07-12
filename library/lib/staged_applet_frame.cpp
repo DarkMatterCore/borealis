@@ -18,7 +18,6 @@
 */
 
 #include <borealis/application.hpp>
-#include <borealis/logger.hpp>
 #include <borealis/staged_applet_frame.hpp>
 #include <borealis/style.hpp>
 #include <borealis/theme.hpp>
