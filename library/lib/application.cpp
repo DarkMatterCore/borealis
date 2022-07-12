@@ -210,7 +210,7 @@ bool Application::init(std::string title, Style* style, LibraryViewsThemeVariant
 
     LOG_MSG_INFO("GL Vendor: %s", (const char*)glGetString(GL_VENDOR));
     LOG_MSG_INFO("GL Renderer: %s", (const char*)glGetString(GL_RENDERER));
-    LOG_MSG_INFO("GL Version: %S", (const char*)glGetString(GL_VERSION));
+    LOG_MSG_INFO("GL Version: %s", (const char*)glGetString(GL_VERSION));
 
     if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1))
     {
