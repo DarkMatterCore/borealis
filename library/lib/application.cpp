@@ -886,7 +886,7 @@ void Application::pushView(View* view, ViewAnimation animation, bool registerExi
         view->registerAction("brls/hints/exit"_i18n, Key::PLUS, [] { Application::quit(); return true; });
 
     if (registerFps)
-        view->registerAction("FPS", Key::MINUS, [] { Application::toggleFramerateDisplay(); return true; }, true);
+        view->registerAction("FPS", Key::MINUS, [] { Application::toggleFramerateDisplay(); return true; }, true, true);
 
     // Fade out animation
     if (fadeOut)

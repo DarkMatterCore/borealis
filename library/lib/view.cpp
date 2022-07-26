@@ -394,10 +394,10 @@ void View::drawBackground(NVGcontext* vg, FrameContext* ctx, Style* style)
     }
 }
 
-void View::registerAction(std::string hintText, Key key, ActionListener actionListener, bool hidden)
+void View::registerAction(std::string hintText, Key key, ActionListener actionListener, bool available, bool hidden)
 {
     if (auto it = std::find(this->actions.begin(), this->actions.end(), key); it != this->actions.end())
-        *it = { key, hintText, true, hidden, actionListener };
+        *it = { key, hintText, available, hidden, actionListener };
     else
         this->actions.push_back({ key, hintText, true, hidden, actionListener });
 }
@@ -414,6 +414,24 @@ void View::setActionAvailable(Key key, bool available)
 {
     if (auto it = std::find(this->actions.begin(), this->actions.end(), key); it != this->actions.end())
         it->available = available;
+}
+
+void View::setActionHidden(Key key, bool hidden)
+{
+    if (auto it = std::find(this->actions.begin(), this->actions.end(), key); it != this->actions.end())
+    {
+        it->hidden = hidden;
+        Application::getGlobalHintsUpdateEvent()->fire();
+    }
+}
+
+void View::unregisterAction(Key key)
+{
+    if (auto it = std::find(this->actions.begin(), this->actions.end(), key); it != this->actions.end())
+    {
+        this->actions.erase(it);
+        Application::getGlobalHintsUpdateEvent()->fire();
+    }
 }
 
 void View::setBoundaries(int x, int y, unsigned width, unsigned height)
