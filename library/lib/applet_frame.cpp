@@ -61,9 +61,43 @@ void AppletFrame::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned he
     unsigned subTitleWidth          = this->width - subTitleLeftPadding - subTitleRightPadding;
     unsigned sideSubTitleWidth      = (subTitleWidth - subTitleSeparatorWidth) / 2;
 
+    // Always draw content view first, if available
+    if (contentView)
+    {
+        float slideAlpha = 1.0f - this->contentView->alpha;
+
+        if ((this->slideIn && this->animation == ViewAnimation::SLIDE_LEFT) || (this->slideOut && this->animation == ViewAnimation::SLIDE_RIGHT))
+            slideAlpha = 1.0f - slideAlpha;
+
+        int translation = (int)((float)style->AppletFrame.slideAnimation * slideAlpha);
+
+        if ((this->slideIn && this->animation == ViewAnimation::SLIDE_LEFT) || (this->slideOut && this->animation == ViewAnimation::SLIDE_RIGHT))
+            translation -= style->AppletFrame.slideAnimation;
+
+        if (this->slideOut || this->slideIn)
+            nvgTranslate(vg, -translation, 0);
+
+        contentView->frame(ctx);
+
+        if (this->slideOut || this->slideIn)
+            nvgTranslate(vg, translation, 0);
+    }
+
+    // Background (upper)
+    nvgBeginPath(vg);
+    nvgFillColor(vg, a(ctx->theme->backgroundColorRGB));
+    nvgRect(vg, x, y, width, this->headerStyle == HeaderStyle::REGULAR ? style->AppletFrame.headerHeightRegular : style->AppletFrame.headerHeightPopup);
+    nvgFill(vg);
+
+    // Background (lower)
+    nvgBeginPath(vg);
+    nvgFillColor(vg, a(ctx->theme->backgroundColorRGB));
+    nvgRect(vg, x, y + height - style->AppletFrame.footerHeight, width, style->AppletFrame.footerHeight);
+    nvgFill(vg);
+
     // Header line
     nvgBeginPath(vg);
-    nvgFillColor(vg, a(ctx->theme->textColor));
+    nvgFillColor(vg, a(ctx->theme->separatorColor));
     nvgRect(vg, x + style->AppletFrame.separatorSpacing, y + (this->headerStyle == HeaderStyle::REGULAR ? style->AppletFrame.headerHeightRegular : style->AppletFrame.headerHeightPopup) - 1, \
             width - style->AppletFrame.separatorSpacing * 2, 1);
     nvgFill(vg);
@@ -116,35 +150,11 @@ void AppletFrame::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned he
     if (this->icon)
         this->icon->frame(ctx);
 
-    // Separators
-    nvgFillColor(vg, a(ctx->theme->separatorColor));
-
     // Footer line
     nvgBeginPath(vg);
+    nvgFillColor(vg, a(ctx->theme->separatorColor));
     nvgRect(vg, x + style->AppletFrame.separatorSpacing, y + height - style->AppletFrame.footerHeight, width - style->AppletFrame.separatorSpacing * 2, 1);
     nvgFill(vg);
-
-    // Content view
-    if (contentView)
-    {
-        float slideAlpha = 1.0f - this->contentView->alpha;
-
-        if ((this->slideIn && this->animation == ViewAnimation::SLIDE_LEFT) || (this->slideOut && this->animation == ViewAnimation::SLIDE_RIGHT))
-            slideAlpha = 1.0f - slideAlpha;
-
-        int translation = (int)((float)style->AppletFrame.slideAnimation * slideAlpha);
-
-        if ((this->slideIn && this->animation == ViewAnimation::SLIDE_LEFT) || (this->slideOut && this->animation == ViewAnimation::SLIDE_RIGHT))
-            translation -= style->AppletFrame.slideAnimation;
-
-        if (this->slideOut || this->slideIn)
-            nvgTranslate(vg, -translation, 0);
-
-        contentView->frame(ctx);
-
-        if (this->slideOut || this->slideIn)
-            nvgTranslate(vg, translation, 0);
-    }
 }
 
 View* AppletFrame::getDefaultFocus()
