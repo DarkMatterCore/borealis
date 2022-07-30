@@ -400,20 +400,26 @@ void View::registerAction(std::string hintText, Key key, ActionListener actionLi
         *it = { key, hintText, available, hidden, actionListener };
     else
         this->actions.push_back({ key, hintText, true, hidden, actionListener });
+
+    Application::getGlobalHintsUpdateEvent()->fire();
 }
 
 void View::updateActionHint(Key key, std::string hintText)
 {
     if (auto it = std::find(this->actions.begin(), this->actions.end(), key); it != this->actions.end())
+    {
         it->hintText = hintText;
-
-    Application::getGlobalHintsUpdateEvent()->fire();
+        Application::getGlobalHintsUpdateEvent()->fire();
+    }
 }
 
 void View::setActionAvailable(Key key, bool available)
 {
     if (auto it = std::find(this->actions.begin(), this->actions.end(), key); it != this->actions.end())
+    {
         it->available = available;
+        Application::getGlobalHintsUpdateEvent()->fire();
+    }
 }
 
 void View::setActionHidden(Key key, bool hidden)
