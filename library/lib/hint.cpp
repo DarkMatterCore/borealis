@@ -91,7 +91,7 @@ void Hint::rebuildHints(bool force)
             hintBaseParent = hintBaseParent->getParent();
         }
 
-        if (focusParent != hintBaseParent)
+        if (focusParent && focusParent != hintBaseParent)
             return;
     }
 
