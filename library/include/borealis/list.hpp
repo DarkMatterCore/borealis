@@ -126,6 +126,8 @@ class SelectListItem : public ListItem
 
     ValueSelectedEvent* getValueSelectedEvent();
 
+    std::vector<std::string>* getValues();
+
   protected:
     std::vector<std::string> values;
     unsigned selectedValue = 0;

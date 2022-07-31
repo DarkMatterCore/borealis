@@ -685,6 +685,11 @@ ValueSelectedEvent* SelectListItem::getValueSelectedEvent()
     return &this->valueEvent;
 }
 
+std::vector<std::string>* SelectListItem::getValues()
+{
+    return &this->values;
+}
+
 List::List(size_t defaultFocus, bool drawScrollBar) : ScrollView(drawScrollBar)
 {
     this->layout = new ListContentView(this, defaultFocus);
