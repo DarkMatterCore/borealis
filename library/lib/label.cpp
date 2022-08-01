@@ -235,11 +235,17 @@ void Label::draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, 
 
 void Label::startTickerAnimation()
 {
-    this->updateTextDimensions();
+    if (this->text == "") return;
+
+    if (!this->textTickerWidth)
+    {
+        this->updateTextDimensions();
+        this->invalidate(true);
+    }
 
     this->tickerWaitTimerCtx.duration = 1500;
     this->tickerWaitTimerCtx.cb = [&](void *userdata) {
-        menu_animation_ctx_tag tag = (uintptr_t) & this->tickerOffset;
+        menu_animation_ctx_tag tag = (uintptr_t)&this->tickerOffset;
         menu_animation_kill_by_tag(&tag);
 
         this->tickerOffset = 0.0f;
@@ -266,7 +272,7 @@ void Label::stopTickerAnimation()
 {
     menu_timer_kill(&this->tickerWaitTimer);
 
-    menu_animation_ctx_tag tag = (uintptr_t) & this->tickerOffset;
+    menu_animation_ctx_tag tag = (uintptr_t)&this->tickerOffset;
     menu_animation_kill_by_tag(&tag);
 
     this->tickerOffset = 0.0f;

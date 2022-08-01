@@ -654,7 +654,7 @@ SelectListItem::SelectListItem(std::string label, std::vector<std::string> value
 
     this->getClickEvent()->subscribe([this](View* view) {
         ValueSelectedEvent::Callback valueCallback = [this](int result) {
-            if (result == -1)
+            if (result < 0 || result >= static_cast<int>(this->values.size()))
                 return;
 
             this->setValue(this->values[result], false, false);
