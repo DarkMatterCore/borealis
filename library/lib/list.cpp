@@ -48,7 +48,6 @@ void ListContentView::customSpacing(View* current, View* next, int* spacing)
     // Don't add spacing to the first list item
     // if it doesn't have a description and the second one is a
     // list item too
-    // Or if the next item is a ListItemGroupSpacing
     if (ListItem* currentItem = dynamic_cast<ListItem*>(current))
     {
         if (currentItem->getReduceDescriptionSpacing())
@@ -64,10 +63,6 @@ void ListContentView::customSpacing(View* current, View* next, int* spacing)
 
                 nextItem->setDrawTopSeparator(currentItem->isCollapsed());
             }
-        }
-        else if (dynamic_cast<ListItemGroupSpacing*>(next))
-        {
-            *spacing = 0;
         }
         else if (dynamic_cast<Table*>(next))
         {
