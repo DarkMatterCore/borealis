@@ -126,7 +126,7 @@ class SelectListItem : public ListItem
 
     ValueSelectedEvent* getValueSelectedEvent();
 
-    std::vector<std::string>* getValues();
+    void updateValues(const std::vector<std::string>& values);
 
   protected:
     std::vector<std::string> values;

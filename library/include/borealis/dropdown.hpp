@@ -42,8 +42,6 @@ typedef Event<int> ValueSelectedEvent;
 class Dropdown : public View
 {
   private:
-    Dropdown(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, size_t selected = 0);
-
     std::string title;
 
     int valuesCount;
@@ -59,6 +57,7 @@ class Dropdown : public View
     unsigned getShowAnimationDuration(ViewAnimation animation) override;
 
   public:
+    Dropdown(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, size_t selected = 0);
     ~Dropdown();
 
     void draw(NVGcontext* vg, int x, int y, unsigned width, unsigned height, Style* style, FrameContext* ctx) override;
@@ -70,6 +69,10 @@ class Dropdown : public View
     void willDisappear(bool resetState = false) override;
 
     static void open(std::string title, std::vector<std::string> values, ValueSelectedEvent::Callback cb, int selected = -1, bool registerExit = true, bool registerFps = true);
+
+    inline const std::string& getTitle() {
+        return this->title;
+    }
 
     bool isTranslucent() override
     {

@@ -680,9 +680,36 @@ ValueSelectedEvent* SelectListItem::getValueSelectedEvent()
     return &this->valueEvent;
 }
 
-std::vector<std::string>* SelectListItem::getValues()
+void SelectListItem::updateValues(const std::vector<std::string>& values)
 {
-    return &this->values;
+    if (!values.size()) return;
+
+    this->values = values;
+    this->setSelectedValue(0);
+
+    // Pop the current Dropdown and push a new Dropdown with the updated values if it's currently being displayed.
+    std::vector<View*> *view_stack = Application::getViewStack();
+    size_t view_stack_size = (view_stack ? view_stack->size() : 0);
+
+    std::vector<View*> *focus_stack = Application::getFocusStack();
+    size_t focus_stack_size = (focus_stack ? focus_stack->size() : 0);
+
+    if (view_stack_size < 2 || focus_stack_size < 1 || focus_stack->at(focus_stack_size - 1) != this) return;
+
+    Dropdown *dropdown = dynamic_cast<Dropdown*>(view_stack->at(view_stack_size - 1));
+    if (!dropdown || dropdown->getTitle() != this->getLabel()) return;
+
+    ValueSelectedEvent::Callback valueCallback = [this](int result) {
+        if (result < 0 || result >= static_cast<int>(this->values.size()))
+            return;
+
+        this->setValue(this->values[result], false, false);
+        this->selectedValue = result;
+
+        this->valueEvent.fire(result);
+    };
+
+    Application::swapView(new Dropdown(this->getLabel(), this->values, valueCallback, this->selectedValue), ViewAnimation::FADE, this->registerExit, this->registerFps);
 }
 
 List::List(size_t defaultFocus, bool drawScrollBar) : ScrollView(drawScrollBar)
