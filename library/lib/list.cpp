@@ -638,26 +638,33 @@ ListItemGroupSpacing::ListItemGroupSpacing(bool separator)
         this->setColor(theme->listItemSeparatorColor);
 }
 
-SelectListItem::SelectListItem(std::string label, std::vector<std::string> values, unsigned selectedValue, std::string description, bool registerExit, bool registerFps)
+SelectListItem::SelectListItem(std::string label, std::vector<std::string> values, unsigned selectedValue, std::string description, bool displayValue, bool registerExit, bool registerFps)
     : ListItem(label, description)
     , values(values)
     , selectedValue(selectedValue)
+    , displayValue(displayValue)
     , registerExit(registerExit)
     , registerFps(registerFps)
 {
-    this->setValue(values[selectedValue], false, false);
+    if (this->displayValue)
+        this->setValue(values[selectedValue], false, false);
 
     this->getClickEvent()->subscribe([this](View* view) {
+        if (this->values.empty()) return;
+
         ValueSelectedEvent::Callback valueCallback = [this](int result) {
             if (result < 0 || result >= static_cast<int>(this->values.size()))
                 return;
 
-            this->setValue(this->values[result], false, false);
+            if (this->displayValue)
+                this->setValue(this->values[result], false, false);
+
             this->selectedValue = result;
 
             this->valueEvent.fire(result);
         };
-        Dropdown::open(this->getLabel(), this->values, valueCallback, this->selectedValue, this->registerExit, this->registerFps);
+
+        Dropdown::open(this->getLabel(), this->values, valueCallback, this->displayValue ? this->selectedValue : -1, this->registerExit, this->registerFps);
     });
 }
 
@@ -666,7 +673,9 @@ void SelectListItem::setSelectedValue(unsigned value)
     if (value >= 0 && value < this->values.size())
     {
         this->selectedValue = value;
-        this->setValue(this->values[value], false, false);
+
+        if (this->displayValue)
+            this->setValue(this->values[value], false, false);
     }
 }
 
@@ -682,12 +691,13 @@ ValueSelectedEvent* SelectListItem::getValueSelectedEvent()
 
 void SelectListItem::updateValues(const std::vector<std::string>& values)
 {
-    if (!values.size()) return;
-
     this->values = values;
     this->setSelectedValue(0);
 
+    bool forcePopDropdown = values.empty();
+
     // Pop the current Dropdown and push a new Dropdown with the updated values if it's currently being displayed.
+    // Alternatively, pop the current Dropdown if the provided vector is empty.
     std::vector<View*> *view_stack = Application::getViewStack();
     size_t view_stack_size = (view_stack ? view_stack->size() : 0);
 
@@ -699,17 +709,23 @@ void SelectListItem::updateValues(const std::vector<std::string>& values)
     Dropdown *dropdown = dynamic_cast<Dropdown*>(view_stack->at(view_stack_size - 1));
     if (!dropdown || dropdown->getTitle() != this->getLabel()) return;
 
-    ValueSelectedEvent::Callback valueCallback = [this](int result) {
-        if (result < 0 || result >= static_cast<int>(this->values.size()))
-            return;
+    if (forcePopDropdown) {
+        dropdown->onCancel();
+    } else {
+        ValueSelectedEvent::Callback valueCallback = [this](int result) {
+            if (result < 0 || result >= static_cast<int>(this->values.size()))
+                return;
 
-        this->setValue(this->values[result], false, false);
-        this->selectedValue = result;
+            if (this->displayValue)
+                this->setValue(this->values[result], false, false);
 
-        this->valueEvent.fire(result);
-    };
+            this->selectedValue = result;
 
-    Application::swapView(new Dropdown(this->getLabel(), this->values, valueCallback, this->selectedValue), ViewAnimation::FADE, this->registerExit, this->registerFps);
+            this->valueEvent.fire(result);
+        };
+
+        Application::swapView(new Dropdown(this->getLabel(), this->values, valueCallback, this->displayValue ? this->selectedValue : -1), ViewAnimation::FADE, this->registerExit, this->registerFps);
+    }
 }
 
 List::List(size_t defaultFocus, bool drawScrollBar) : ScrollView(drawScrollBar)

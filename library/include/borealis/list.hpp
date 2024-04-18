@@ -109,7 +109,7 @@ class ListItemGroupSpacing : public Rectangle
 
 // A list item with mutliple choices for its value
 // (will open a Dropdown)
-
+//
 // Fired when the user has selected a value
 //
 // Parameter is either the selected value index
@@ -119,7 +119,7 @@ typedef Event<int> ValueSelectedEvent;
 class SelectListItem : public ListItem
 {
   public:
-    SelectListItem(std::string label, std::vector<std::string> values, unsigned selectedValue = 0, std::string description = "", bool registerExit = true, bool registerFps = true);
+    SelectListItem(std::string label, std::vector<std::string> values, unsigned selectedValue = 0, std::string description = "", bool displayValue = true, bool registerExit = true, bool registerFps = true);
 
     void setSelectedValue(unsigned value);
     unsigned getSelectedValue();
@@ -131,7 +131,7 @@ class SelectListItem : public ListItem
   protected:
     std::vector<std::string> values;
     unsigned selectedValue = 0;
-    bool registerExit, registerFps;
+    bool displayValue, registerExit, registerFps;
 
     ValueSelectedEvent valueEvent;
 };
