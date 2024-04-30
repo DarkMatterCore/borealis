@@ -45,7 +45,7 @@
 
 #ifdef __SWITCH__
 #include <switch.h>
-#include <bfttf.h>
+#include <core/bfttf.h>
 #endif
 
 #include <chrono>

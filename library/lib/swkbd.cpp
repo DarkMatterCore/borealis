@@ -23,7 +23,7 @@
 
 #ifdef __SWITCH__
 #include <switch.h>
-#include <nxdt_log.h>
+#include <core/nxdt_log.h>
 #endif
 
 namespace brls
