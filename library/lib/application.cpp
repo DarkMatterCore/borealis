@@ -1013,6 +1013,7 @@ int Application::findFont(const char* fontName)
 
 void Application::crash(std::string text)
 {
+    Application::blockInputsTokens = 0; // Make sure inputs are not blocked
     CrashFrame* crashFrame = new CrashFrame(text, [](View* view) { Application::quit(); });
     Application::pushView(crashFrame);
 }
