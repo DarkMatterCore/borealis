@@ -698,15 +698,15 @@ void SelectListItem::updateValues(const std::vector<std::string>& values)
 
     // Pop the current Dropdown and push a new Dropdown with the updated values if it's currently being displayed.
     // Alternatively, pop the current Dropdown if the provided vector is empty.
-    std::vector<View*> *view_stack = Application::getViewStack();
-    size_t view_stack_size = (view_stack ? view_stack->size() : 0);
+    std::vector<View*>& view_stack = Application::getViewStack();
+    size_t view_stack_size = view_stack.size();
 
-    std::vector<View*> *focus_stack = Application::getFocusStack();
-    size_t focus_stack_size = (focus_stack ? focus_stack->size() : 0);
+    std::vector<View*>& focus_stack = Application::getFocusStack();
+    size_t focus_stack_size = focus_stack.size();
 
-    if (view_stack_size < 2 || focus_stack_size < 1 || focus_stack->at(focus_stack_size - 1) != this) return;
+    if (view_stack_size < 2 || focus_stack_size < 1 || focus_stack.at(focus_stack_size - 1) != this) return;
 
-    Dropdown *dropdown = dynamic_cast<Dropdown*>(view_stack->at(view_stack_size - 1));
+    Dropdown *dropdown = dynamic_cast<Dropdown*>(view_stack.at(view_stack_size - 1));
     if (!dropdown || dropdown->getTitle() != this->getLabel()) return;
 
     if (forcePopDropdown) {
